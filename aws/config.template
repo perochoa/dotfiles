@@ -1,0 +1,29 @@
+[default]
+region = us-east-1
+output = json
+
+[sso-session your-sso-session]
+sso_start_url = https://your-org.awsapps.com/start
+sso_region = us-east-1
+sso_registration_scopes = sso:account:access
+
+[profile dev]
+sso_session = your-sso-session
+sso_account_id = 111111111111
+sso_role_name = role-admins-access
+region = us-east-1
+output = json
+
+[profile staging]
+sso_session = your-sso-session
+sso_account_id = 222222222222
+sso_role_name = role-admins-access
+region = us-east-1
+output = json
+
+[profile prod]
+sso_session = your-sso-session
+sso_account_id = 333333333333
+sso_role_name = role-admins-access
+region = us-east-1
+output = json

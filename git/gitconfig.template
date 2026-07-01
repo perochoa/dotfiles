@@ -1,0 +1,22 @@
+[user]
+  name = John Doe
+  email = john_doe@email.domain
+  username = jdoe
+
+[fetch]
+  prune = true
+
+[alias]
+  co = checkout
+  cob = checkout -b
+  fp = fetch --prune
+  pl = pull
+  plr = pull --rebase
+  pf = push --force-with-lease
+  st = status
+  rs = restore --staged
+  cm = commit -m
+  ca = commit -am
+  rb = rebase
+  br = branch
+  cma = "!f() { git add -A && git commit -m \"$*\"; }; f"

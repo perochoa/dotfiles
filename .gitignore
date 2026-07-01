@@ -1,0 +1,16 @@
+*.local
+*.backup.*
+private/
+*.log
+.DS_Store
+aws/config.local
+aws/cli/cache/
+aws/sso/cache/
+copilot/config.json
+copilot/command-history-state.json
+copilot/installed-plugins/
+copilot/language-servers/
+copilot/session-store.db*
+kube/config.eks.local.yaml
+kube/config.local
+kube/cache/
