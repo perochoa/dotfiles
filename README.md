@@ -36,10 +36,10 @@ cd ~/.config/dotfiles
 This will:
 
 1. Symlink `~/.zshrc`, `~/.gitconfig`, `~/.tmux.conf`, and `~/.config/nvim` to dotfiles-managed files.
-2. Symlink `~/.copilot/settings.json`, `~/.copilot/lsp-config.json`, and `~/.copilot/skills` to the tracked Copilot config in `copilot/`.
+2. Symlink `~/.copilot/skills` to the tracked Copilot skills in `copilot/`.
 3. Symlink each script in `bin/` (without the `.sh` extension) into `~/.local/bin/` so they are on `$PATH`.
 4. Create `aws/config.local` and `kube/config.eks.local.yaml` from tracked templates if missing.
-5. Run a basic secrets guard against tracked-style files.
+5. Note: bootstrap creates local templates but does not automatically scan for secrets. Run a secrets scanner (for example `detect-secrets` or `git-secrets`) and perform a git-history scan before publishing a public repo.
 
 ## Common workflows
 
@@ -84,4 +84,12 @@ See [`homebrew/Brewfile.lock.md`](homebrew/Brewfile.lock.md) for what is intenti
 ## Safety notes
 
 - Do not commit local secrets, auth caches, or machine-generated state.
-- Run `scripts/secrets-check.sh` before commit if you bypass `bootstrap.sh`.
+- Bootstrap creates local templates but does not run an automatic secrets scanner. Before publishing, run a secrets scanner (for example `detect-secrets` or `git-secrets`) and review git history for any committed secrets or PII.
+
+## Public repository checklist (before publishing)
+
+- Ensure all `*.local` files are templates or removed from the repository (examples: `aws/config.local`, `kube/config.eks.local.yaml`).
+- Remove tracked local-only files from the index (git rm --cached <file>) and commit templates instead.
+- Run a history scan for secrets and PII (for example: `git log --all -S "AKIA\|ghp_\|AWS_SECRET_ACCESS_KEY"` and `detect-secrets scan --baseline .secrets.baseline`).
+- If secrets were ever committed, rotate credentials immediately and rewrite history (git-filter-repo or BFG) before publishing.
+- Consider adding an automated pre-push/CI secret check to block accidental leaks.

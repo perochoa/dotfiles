@@ -20,7 +20,9 @@
 ## Validation before commit
 
 ```bash
-./scripts/secrets-check.sh
+# Basic checks (replace with your preferred secret scanner)
+# Recommend installing and running detect-secrets or git-secrets before committing
+git grep -En "AKIA|ghp_|AWS_SECRET_ACCESS_KEY|aws_secret_access_key" || true
 zsh -n shell/*.zsh shell/zshrc
 bash -n bootstrap.sh scripts/*.sh
 ```
