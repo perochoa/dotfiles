@@ -1,0 +1,45 @@
+# Font
+
+font-family = Hack Nerd Font Mono
+font-style = Regular
+font-style-bold = Bold
+font-style-italic = Italic
+font-style-bold-italic = Bold Italic
+font-size = 13
+adjust-cell-height = 10%
+
+# Cursor
+cursor-style = bar
+cursor-style-blink = true
+cursor-color = #f8f8f2
+
+# Color Scheme
+
+theme = Ayu
+
+# Window & Appearance
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+background-opacity = 0.95
+background-blur-radius = 20
+macos-titlebar-style = tabs
+window-theme = dark
+
+# Terminal Behavior
+scrollback-limit = 10000
+mouse-hide-while-typing = true
+copy-on-select = true
+confirm-close-surface = false
+quit-after-last-window-closed = true
+
+# Shell Integration
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+
+# Keybindings
+keybind = super+opt+h=goto_split:left
+keybind = super+opt+l=goto_split:right
+keybind = super+opt+k=goto_split:up
+keybind = super+opt+j=goto_split:down
+keybind = super+0=reset_font_size
