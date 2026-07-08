@@ -13,6 +13,7 @@ source <(starship init zsh)
 # source <(starship preset tokyo-night -o ~/.config/dotfiles/starship/starship.toml --force)
 
 export PYENV_ROOT="$HOME/.pyenv"
+export VIRTUAL_ENV_DISABLE_PROMPT="true" # Disable default pyenv prompt
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 source <(pyenv init -)
 source <(pyenv virtualenv-init -)
