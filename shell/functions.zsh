@@ -1,5 +1,42 @@
 #!/bin/zsh
 
+# Colors Constants
+txtred="\e[0;31m" # Red
+txtgrn="\e[0;32m" # Green
+txtylw="\e[0;33m" # Yellow
+txtblu="\e[0;34m" # Blue
+txtpur="\e[0;35m" # Purple
+txtcyn="\e[0;36m" # Cyan
+
+bldred="\e[0;31m" # Red
+bldgrn="\e[0;32m" # Green
+bldylw="\e[0;33m" # Yellow
+bldblu="\e[0;34m" # Blue
+bldpur="\e[0;35m" # Purple
+bldcyn="\e[0;36m" # Cyan
+
+txtrst="\e[0m"
+
+__date_prefix() {
+  printf "%b" "${txtcyn}$(date '+%Y-%b-%d %H:%M:%S')${txtrst}"
+}
+
+log_info() {
+  printf "%b\n" "$(__date_prefix)${bldgrn} [INFO] ${txtrst}${1}"
+}
+
+log_debug() {
+  printf "%b\n" "$(__date_prefix)${bldpur} [DEBUG] ${txtrst}${1}"
+}
+
+log_warn() {
+  printf "%b\n" "$(__date_prefix)${bldylw} [WARN] ${txtrst}${1}"
+}
+
+log_error() {
+  printf "%b\n" "$(__date_prefix)${bldgrn} [ERROR] ${txtrst}${1}"
+}
+
 function weather() {
   local location
   location="${1:-Toronto,ON}"
