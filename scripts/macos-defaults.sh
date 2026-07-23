@@ -15,24 +15,24 @@ EOF
 
 DRY_RUN=false
 
-log()  { echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO  $*"; }
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO  $*"; }
 warn() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN  $*" >&2; }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run)
-      DRY_RUN=true
-      shift
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      usage
-      exit 1
-      ;;
+  --dry-run)
+    DRY_RUN=true
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    usage
+    exit 1
+    ;;
   esac
 done
 
@@ -54,7 +54,7 @@ SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
 run_cmd mkdir -p "$SCREENSHOT_DIR"
 
 # Finder behavior
-run_cmd defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+run_cmd defaults write -g AppleShowAllExtensions -bool true
 run_cmd defaults write com.apple.finder ShowPathbar -bool true
 run_cmd defaults write com.apple.finder ShowStatusBar -bool true
 run_cmd defaults write com.apple.finder _FXSortFoldersFirst -bool true
@@ -67,6 +67,10 @@ run_cmd defaults write com.apple.dock show-recents -bool false
 run_cmd defaults write com.apple.screencapture location -string "$SCREENSHOT_DIR"
 run_cmd defaults write com.apple.screencapture type -string png
 run_cmd defaults write com.apple.screencapture disable-shadow -bool true
+
+# Keyboard
+run_cmd defaults write -g KeyRepeat -int 0
+run_cmd defaults write -g ApplePressAndHoldEnabled -bool false
 
 if [[ "$DRY_RUN" == true ]]; then
   log "DRY RUN: would restart Finder, Dock, and SystemUIServer"

@@ -11,3 +11,4 @@ vim.opt.sidescrolloff = 8
 vim.opt.updatetime = 200
 vim.opt.splitright = true
 vim.opt.splitbelow = true
+vim.g.lazyvim_prettier_needs_config = false

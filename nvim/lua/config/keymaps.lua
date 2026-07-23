@@ -7,6 +7,16 @@ local map = vim.keymap.set
 map("n", "<leader>w", "<cmd>w<cr>", { desc = "Write Buffer" })
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 map("n", "<leader>rn", [[:%s/\<<C-r><C-w>\>//gI<Left><Left><Left>]], { desc = "Rename Word in Buffer" })
+map({ "n", "x" }, "<leader>cf", function()
+  local ok, conform = pcall(require, "conform")
+  if ok then
+    conform.format({ async = false, lsp_format = "fallback" })
+    return
+  end
+  if LazyVim and LazyVim.lsp then
+    LazyVim.lsp.format()
+  end
+end, { desc = "Format" })
 
 map("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
 map("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })
