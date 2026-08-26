@@ -7,7 +7,7 @@ This Neovim config is managed from `~/.config/dotfiles/nvim` and symlinked to
 
 - **Language/tooling extras:** TypeScript, Python, Go, JSON, YAML, TOML, SQL, Docker, Terraform, Git.
 - **Developer workflows:** test runner (`neotest` via LazyVim test extra), DAP core, rename/refactor extras, project utilities.
-- **Formatting/linting extras:** Prettier and ESLint integrations, with Mason-aware Prettier/JQ commands and `jq` fallback for JSON/JSON5 formatting (including when Node is unavailable for Prettier).
+- **Formatting/linting extras:** LazyVim's native Conform, Prettier, and ESLint integrations.
 - **Custom additions:** Fugitive Git commands.
 - **File navigation:** Snacks Explorer and Snacks Picker.
 - **Tool installs via Mason:** common formatters/linters/debuggers (`prettier`, `eslint_d`, `black`, `debugpy`, `delve`, etc.).

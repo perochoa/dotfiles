@@ -1,4 +1,4 @@
-eocal function has_codeartifact_pip()
+local function has_codeartifact_pip()
   local env_indexes = {
     vim.env.PIP_INDEX_URL or "",
     vim.env.PIP_EXTRA_INDEX_URL or "",
@@ -49,7 +49,6 @@ return {
     opts = function(_, opts)
       local tools = {
         "eslint_d",
-        "jq",
         "prettier",
         "shellcheck",
         "shfmt",
