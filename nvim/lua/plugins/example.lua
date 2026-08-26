@@ -33,21 +33,6 @@ local private_pip_index = has_codeartifact_pip()
 
 return {
   {
-    "tpope/vim-fugitive",
-    cmd = { "Git", "Gblame", "Gvdiffsplit" },
-    keys = {
-      { "<leader>gg", "<cmd>Git<cr>", desc = "Git Status (Fugitive)" },
-      { "<leader>gB", "<cmd>Gblame<cr>", desc = "Git Blame (Fugitive)" },
-    },
-  },
-  {
-    "mbbill/undotree",
-    cmd = "UndotreeToggle",
-    keys = {
-      { "<leader>uD", "<cmd>UndotreeToggle<cr>", desc = "Undo Tree" },
-    },
-  },
-  {
     "folke/trouble.nvim",
     opts = { use_diagnostic_signs = true },
   },
@@ -56,7 +41,6 @@ return {
     opts = function(_, opts)
       local tools = {
         "eslint_d",
-        "jq",
         "prettier",
         "shellcheck",
         "shfmt",
