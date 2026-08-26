@@ -1,4 +1,4 @@
-local function has_codeartifact_pip()
+eocal function has_codeartifact_pip()
   local env_indexes = {
     vim.env.PIP_INDEX_URL or "",
     vim.env.PIP_EXTRA_INDEX_URL or "",
@@ -38,13 +38,6 @@ return {
     keys = {
       { "<leader>gg", "<cmd>Git<cr>", desc = "Git Status (Fugitive)" },
       { "<leader>gB", "<cmd>Gblame<cr>", desc = "Git Blame (Fugitive)" },
-    },
-  },
-  {
-    "mbbill/undotree",
-    cmd = "UndotreeToggle",
-    keys = {
-      { "<leader>uD", "<cmd>UndotreeToggle<cr>", desc = "Undo Tree" },
     },
   },
   {

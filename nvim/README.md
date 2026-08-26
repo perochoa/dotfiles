@@ -8,7 +8,7 @@ This Neovim config is managed from `~/.config/dotfiles/nvim` and symlinked to
 - **Language/tooling extras:** TypeScript, Python, Go, JSON, YAML, TOML, SQL, Docker, Terraform, Git.
 - **Developer workflows:** test runner (`neotest` via LazyVim test extra), DAP core, rename/refactor extras, project utilities.
 - **Formatting/linting extras:** Prettier and ESLint integrations, with Mason-aware Prettier/JQ commands and `jq` fallback for JSON/JSON5 formatting (including when Node is unavailable for Prettier).
-- **Custom additions:** Fugitive Git commands, UndoTree, Neo-tree CWD sync behavior.
+- **Custom additions:** Fugitive Git commands and Neo-tree CWD sync behavior.
 - **Tool installs via Mason:** common formatters/linters/debuggers (`prettier`, `eslint_d`, `black`, `debugpy`, `delve`, etc.).
 - **Host-aware Mason behavior:** Go-based tools are only enforced when `go` is on `PATH`; Python pip-backed tools are skipped when a CodeArtifact-only pip index is detected without usable credentials.
 
@@ -16,7 +16,6 @@ This Neovim config is managed from `~/.config/dotfiles/nvim` and symlinked to
 
 - `<leader>gg` - open Fugitive Git status
 - `<leader>gB` - open Fugitive blame
-- `<leader>uD` - toggle UndoTree
 - `<leader>w` - write buffer
 - `<leader>qq` - quit all windows
 - `<leader>rn` - rename current word in current buffer
