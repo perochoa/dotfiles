@@ -15,6 +15,15 @@ return {
             actions = {
               explorer_focus = focus_explorer_directory,
             },
+            win = {
+              list = {
+                keys = {
+                  ["x"] = { "explorer_move", mode = { "n", "x" } },
+                  ["<C-x>"] = { "explorer_move", mode = { "n", "x" } },
+                  ["d"] = "explorer_del",
+                },
+              },
+            },
             on_close = function(picker)
               vim.g.snacks_explorer_last_cwd = picker:cwd()
             end,
