@@ -19,7 +19,6 @@ return {
               list = {
                 keys = {
                   ["x"] = { "explorer_move", mode = { "n", "x" } },
-                  ["<C-x>"] = { "explorer_move", mode = { "n", "x" } },
                   ["d"] = "explorer_del",
                 },
               },
