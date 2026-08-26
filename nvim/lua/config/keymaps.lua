@@ -4,8 +4,17 @@
 
 local map = vim.keymap.set
 
+local function explorer_cwd()
+  local explorers = Snacks.picker.get({ source = "explorer" })
+  local explorer = explorers[1]
+  return explorer and explorer:cwd() or LazyVim.root()
+end
+
 map("n", "<leader>w", "<cmd>w<cr>", { desc = "Write Buffer" })
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
+map({ "n", "t" }, "<C-/>", function()
+  Snacks.terminal.focus(nil, { cwd = explorer_cwd() })
+end, { desc = "Terminal (Explorer Dir)" })
 map("n", "<leader>rn", [[:%s/\<<C-r><C-w>\>//gI<Left><Left><Left>]], { desc = "Rename Word in Buffer" })
 map({ "n", "x" }, "<leader>cf", function()
   local ok, conform = pcall(require, "conform")
