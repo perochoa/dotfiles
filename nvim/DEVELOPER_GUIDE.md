@@ -29,7 +29,6 @@ Enabled via `lazyvim.json`:
 
 ### 2. Plugins added in `lua/plugins/example.lua`
 
-- `tpope/vim-fugitive` for rich Git workflows
 - Trouble diagnostics signs enabled
 - Extended Mason tool installation set
 - Extended Treesitter parser coverage
@@ -58,8 +57,8 @@ In `lua/config/keymaps.lua`:
 
 Also from plugin mappings:
 
-- `<leader>gg` — Fugitive Git status
-- `<leader>gB` — Fugitive blame
+- `<leader>gg` — LazyGit at the project root
+- `<leader>gG` — LazyGit in the current working directory
 ---
 
 ## How to use it to the fullest
@@ -101,8 +100,8 @@ Tip: combine with test workflow for precise repro + step-through.
 - Use `<leader>rn` for fast in-buffer rename when a full-symbol rename is unnecessary
 ## E) Git flow in editor
 
-- `<leader>gg`: stage/reset/hunk-aware operations and repo status
-- `<leader>gB`: inline blame
+- `<leader>gg`: open LazyGit at the project root
+- `<leader>gG`: open LazyGit in the current working directory
 - keep diagnostics visible with Trouble for code-quality pass before commit
 
 ---

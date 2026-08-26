@@ -33,14 +33,6 @@ local private_pip_index = has_codeartifact_pip()
 
 return {
   {
-    "tpope/vim-fugitive",
-    cmd = { "Git", "Gblame", "Gvdiffsplit" },
-    keys = {
-      { "<leader>gg", "<cmd>Git<cr>", desc = "Git Status (Fugitive)" },
-      { "<leader>gB", "<cmd>Gblame<cr>", desc = "Git Blame (Fugitive)" },
-    },
-  },
-  {
     "folke/trouble.nvim",
     opts = { use_diagnostic_signs = true },
   },
