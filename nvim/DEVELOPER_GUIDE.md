@@ -37,19 +37,13 @@ Enabled via `lazyvim.json`:
 
 In `lua/config/options.lua`:
 
-- relative line numbers
-- always-on sign column
-- no line wrap by default
-- better viewport context (`scrolloff`, `sidescrolloff`)
-- faster update interval
-- split right / split below behavior
+- increased viewport context (`scrolloff = 8`)
 
 ### 4. Keymaps added
 
 In `lua/config/keymaps.lua`:
 
 - `<leader>w` — save current buffer
-- `<leader>qq` — quit all windows
 - `<leader>rn` — rename current word in current buffer
 - Visual mode:
   - `J` — move selected block down
@@ -57,8 +51,9 @@ In `lua/config/keymaps.lua`:
 
 Also from plugin mappings:
 
-- `<leader>gg` — LazyGit at the project root
+- `<leader>gg` — LazyGit in the active Snacks Explorer directory
 - `<leader>gG` — LazyGit in the current working directory
+
 ---
 
 ## How to use it to the fullest
@@ -98,9 +93,10 @@ Tip: combine with test workflow for precise repro + step-through.
 
 - Use LSP rename/refactor actions under `<leader>c...`
 - Use `<leader>rn` for fast in-buffer rename when a full-symbol rename is unnecessary
+
 ## E) Git flow in editor
 
-- `<leader>gg`: open LazyGit at the project root
+- `<leader>gg`: open LazyGit in the active Snacks Explorer directory
 - `<leader>gG`: open LazyGit in the current working directory
 - keep diagnostics visible with Trouble for code-quality pass before commit
 

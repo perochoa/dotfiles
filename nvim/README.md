@@ -15,10 +15,10 @@ This Neovim config is managed from `~/.config/dotfiles/nvim` and symlinked to
 
 ## Useful custom keys
 
-- `<leader>gg` - open LazyGit at the project root
+- `<leader>gg` - open LazyGit in the active Snacks Explorer directory
 - `<leader>gG` - open LazyGit in the current working directory
+- `<leader>B` - show buffers, or open the repository root when no file buffer exists
 - `<leader>w` - write buffer
-- `<leader>qq` - quit all windows
 - `<leader>rn` - rename current word in current buffer
 
 For base keymaps and commands, see LazyVim docs:
