@@ -10,6 +10,10 @@ local function explorer_cwd()
   return explorer and explorer:cwd() or LazyVim.root()
 end
 
+local function open_explorer()
+  Snacks.explorer({ cwd = vim.g.snacks_explorer_last_cwd or LazyVim.root() })
+end
+
 map("n", "<leader>w", "<cmd>w<cr>", { desc = "Write Buffer" })
 map({ "n", "t" }, "<C-/>", function()
   Snacks.terminal.focus(nil, { cwd = explorer_cwd() })
@@ -17,6 +21,8 @@ end, { desc = "Terminal (Explorer Dir)" })
 map("n", "<leader>gg", function()
   Snacks.lazygit({ cwd = explorer_cwd() })
 end, { desc = "Lazygit (Explorer Dir)" })
+map("n", "<leader>fe", open_explorer, { desc = "Explorer Snacks (last dir)" })
+map("n", "<leader>e", open_explorer, { desc = "Explorer Snacks (last dir)" })
 map("n", "<leader>rn", [[:%s/\<<C-r><C-w>\>//gI<Left><Left><Left>]], { desc = "Rename Word in Buffer" })
 map("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move Selection Down" })
 map("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move Selection Up" })

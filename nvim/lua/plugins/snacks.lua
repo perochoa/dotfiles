@@ -1,3 +1,9 @@
+local function focus_explorer_directory(picker)
+  picker:set_cwd(picker:dir())
+  require("snacks.explorer.git").refresh(picker:cwd())
+  picker:find()
+end
+
 return {
   {
     "folke/snacks.nvim",
@@ -6,6 +12,12 @@ return {
         sources = {
           explorer = {
             git_status_open = true,
+            actions = {
+              explorer_focus = focus_explorer_directory,
+            },
+            on_close = function(picker)
+              vim.g.snacks_explorer_last_cwd = picker:cwd()
+            end,
           },
         },
       },
