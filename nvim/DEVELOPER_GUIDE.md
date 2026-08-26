@@ -11,6 +11,7 @@ Enabled via `lazyvim.json`:
 - DAP core (debugging)
 - Test core (neotest)
 - Incremental rename + refactoring
+- Snacks Explorer and Snacks Picker
 - Treesitter context
 - Project utilities
 - Prettier + ESLint integrations

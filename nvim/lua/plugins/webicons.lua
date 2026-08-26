@@ -1,4 +1,4 @@
--- Add nvim-web-devicons for richer file/folder icons used by neo-tree, lualine, etc.
+-- Add nvim-web-devicons for richer file/folder icons used by UI plugins.
 -- Loaded eagerly so icons are available to UI plugins early.
 return {
   {
@@ -19,4 +19,3 @@ return {
     end,
   },
 }
-
