@@ -69,7 +69,7 @@ run_cmd defaults write com.apple.screencapture type -string png
 run_cmd defaults write com.apple.screencapture disable-shadow -bool true
 
 # Keyboard
-run_cmd defaults write -g KeyRepeat -int 0
+run_cmd defaults write -g KeyRepeat -int 1
 run_cmd defaults write -g ApplePressAndHoldEnabled -bool false
 
 if [[ "$DRY_RUN" == true ]]; then
