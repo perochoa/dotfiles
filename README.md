@@ -13,7 +13,7 @@ cd ~/.config/dotfiles
 
 `bootstrap.sh` is safe to re-run. It:
 
-1. Creates `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from their templates if missing.
+1. Creates `git/gitconfig.local`, `aws/config.local`, `kube/config.eks.local.yaml` and `shell/zshrc.local` from their templates if missing.
 2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, `~/.copilot/skills`, and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
 3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out. The change applies to new login sessions: log out and back in, or run `exec zsh` in open terminals. `~/.zshrc` is zsh-only and refuses to load in bash.
 
@@ -27,7 +27,7 @@ cd ~/.config/dotfiles
 | `fedora/packages.txt` | Native Fedora packages installed with `dnf` |
 | `nvim/` | LazyVim config (see [`nvim/README.md`](nvim/README.md)) |
 | `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
-| `bin/` | `clip.sh` (cross-platform clipboard) and `awsme-sso.sh` (AWS SSO credentials; must be sourced) |
+| `bin/` | `clip.sh` (cross-platform clipboard) and `awsme-sso.sh` (AWS sign-in for SSO and `aws login` profiles; must be sourced) |
 | `aws/`, `kube/` | Config templates; the shell points `AWS_CONFIG_FILE` and `KUBECONFIG` at the local copies |
 | `copilot/skills/` | Copilot CLI skills |
 | `scripts/` | `install-apps.sh`, `macos-defaults.sh`, `linux-defaults.sh`, `check.sh` |
@@ -45,7 +45,7 @@ Everything detects the OS at runtime, so the same files serve both machines.
 
 ## Machine-specific settings
 
-- **Shell:** `shell/zshrc.local`, loaded last.
+- **Shell:** `shell/zshrc.local` (from `zshrc.local.template`), loaded last. Define this machine's AWS profile aliases here; each one sources `awsme-sso` for the profile of the same name in `aws/config.local`.
 - **Git:** `git/gitconfig.local` (linked as `~/.gitconfig`) holds your identity and overrides `git/config`. `git config --global` writes there, never to the tracked file.
 - **AWS / Kubernetes:** `aws/config.local`, `kube/config.eks.local.yaml`, and optionally `~/.kube/config.local`.
 

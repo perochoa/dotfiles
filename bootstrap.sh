@@ -77,6 +77,7 @@ link() {
 copy_template git/gitconfig.local.template git/gitconfig.local
 copy_template aws/config.template aws/config.local
 copy_template kube/config.eks.template.yaml kube/config.eks.local.yaml
+copy_template shell/zshrc.local.template shell/zshrc.local
 
 # Older layouts copied the shared git settings into the local file, where they shadow git/config.
 if [[ -f "$ROOT_DIR/git/gitconfig.local" ]] && grep -qE '^\[(alias|fetch)\]' "$ROOT_DIR/git/gitconfig.local"; then

@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+# Machine-specific shell settings. bootstrap.sh copies this template to shell/zshrc.local (untracked),
+# which zshrc sources last.
+
+# AWS: each alias sources awsme-sso for the profile of the same name in aws/config.local
+# for _profile in dev staging prod; do
+#   alias "$_profile=source \${DOTFILES}/bin/awsme-sso.sh $_profile"
+# done
+# unset _profile
