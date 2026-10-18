@@ -15,7 +15,7 @@ cd ~/.config/dotfiles
 
 1. Creates `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from their templates if missing.
 2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, `~/.copilot/skills`, and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
-3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out.
+3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out. The change applies to new login sessions: log out and back in, or run `exec zsh` in open terminals. `~/.zshrc` is zsh-only and refuses to load in bash.
 
 ## Layout
 

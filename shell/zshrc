@@ -1,6 +1,12 @@
 #!/bin/zsh
 
 # Linked as ~/.zshrc by bootstrap.sh. The repo lives at ~/.config/dotfiles.
+
+# Everything below is zsh-only; stop with a hint if another shell (e.g. Fedora's default bash) sources this.
+if [ -z "${ZSH_VERSION:-}" ]; then
+  echo "~/.zshrc needs zsh, but this is ${0##*/}. Run 'exec zsh', or log out and back in after bootstrap.sh changes your login shell." >&2
+  return 1 2>/dev/null || exit 1
+fi
 export DOTFILES="${HOME}/.config/dotfiles"
 
 for module in env aliases functions terminal; do
