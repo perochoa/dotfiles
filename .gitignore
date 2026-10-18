@@ -1,6 +1,7 @@
 # Machine-local files created from templates (aws/config.local, git/gitconfig.local, shell/zshrc.local, ...)
 *.local
 *.local.yaml
+*.local.md
 *.backup.*
 private/
 *.log

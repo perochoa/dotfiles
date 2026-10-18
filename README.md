@@ -13,7 +13,7 @@ cd ~/.config/dotfiles
 
 `bootstrap.sh` is safe to re-run. It:
 
-1. Creates `git/gitconfig.local`, `aws/config.local`, `kube/config.eks.local.yaml` and `shell/zshrc.local` from their templates if missing.
+1. Creates `git/gitconfig.local`, `aws/config.local`, `kube/config.eks.local.yaml`, `shell/zshrc.local` and `ai/corrections.local.md` from their templates if missing.
 2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, the AI assistant config from `ai/` (see below), and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
 3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out. The change applies to new login sessions: log out and back in, or run `exec zsh` in open terminals. `~/.zshrc` is zsh-only and refuses to load in bash.
 
@@ -52,7 +52,8 @@ Every AI coding assistant reads the same instructions and skills from `ai/`, so 
 | `ai/AGENTS.md` (global instructions) | `~/.claude/CLAUDE.md`, `~/.copilot/copilot-instructions.md` | Claude Code, Copilot CLI |
 | `ai/skills/` (`SKILL.md` skills) | `~/.agents/skills`, and each skill as `~/.claude/skills/<name>` | Copilot CLI, Claude Code |
 | `ai/claude/settings.json` | `~/.claude/settings.json` | Claude Code only (tool-specific settings) |
-| `ai/claude/hooks/` | `~/.claude/hooks` | Claude Code only. `commit-msg-check.py` blocks `git commit` messages that break the commit rules in `ai/AGENTS.md` (needs `python3`) |
+| `ai/claude/hooks/` | `~/.claude/hooks` | Claude Code only. `git-guard.py` enforces the git rules in `ai/AGENTS.md`: no changes to `main`, branch naming, no plain force-push, commit message format (needs `python3`). A repo can override the branch regex with `git config ai.branchPattern`. `correction-check.py` spots prompts that correct the assistant and feeds it the corrections log |
+| `ai/corrections.local.md` (from `corrections.template.md`) | read in place | Every assistant: machine-local log of behavioural corrections, so repeats get turned into rules or hooks (see "Learning from corrections" in `ai/AGENTS.md`) |
 
 Skills are linked one by one into `~/.claude/skills` because Claude Code also installs its own skills there. To support another assistant, add a `link` for its instructions file and skills directory in `bootstrap.sh`; tool-specific settings go in `ai/<tool>/`. The repo-root `AGENTS.md` is guidance for working on this repo, not the global instructions. Project-specific assistant config stays in each project.
 
