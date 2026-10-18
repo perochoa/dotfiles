@@ -1,15 +1,12 @@
 # Contributing
 
-> [!IMPORTANT]
-> **TL;DR:** Keep changes reproducible, avoid committing secrets or runtime state, and update docs whenever structure or bootstrap behavior changes.
-
 ## Rules
 
 1. Treat `~/.config/dotfiles` as the repository root.
 2. Track reusable config and templates; keep machine-local files in `*.local` or `private/`.
 3. Never commit secrets, session tokens, cert/key material, or caches.
-4. Run `./scripts/check.sh` after structural changes to confirm bootstrap, symlinks, and shell startup still work on a fresh machine.
-5. Keep README and AGENTS docs in sync with any behavior or layout changes.
+4. Keep every change working on both macOS and Fedora.
+5. Update the README when layout or bootstrap behaviour changes.
 
 ## Commit conventions
 
