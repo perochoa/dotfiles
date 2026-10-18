@@ -1,28 +1,32 @@
-# Neovim (LazyVim) - Developer Profile
+# Neovim (LazyVim)
 
-This Neovim config is managed from `~/.config/dotfiles/nvim` and symlinked to
-`~/.config/nvim` by `bootstrap.sh`.
+Managed from `~/.config/dotfiles/nvim` and symlinked to `~/.config/nvim` by `bootstrap.sh`. Base keymaps and commands are LazyVim's: <https://lazyvim.github.io/>.
 
-## What's enabled
+## Layout
 
-- **Language/tooling extras:** TypeScript, Python, Go, JSON, YAML, TOML, SQL, Docker, Terraform, Git.
-- **Developer workflows:** test runner (`neotest` via LazyVim test extra), DAP core, rename/refactor extras, project utilities.
-- **Formatting/linting extras:** LazyVim's native Conform, Prettier, and ESLint integrations.
-- **Git workflow:** LazyGit integration through Snacks and LazyVim.
-- **File navigation:** Snacks Explorer and Snacks Picker.
-- **Tool installs via Mason:** common formatters/linters/debuggers (`prettier`, `eslint_d`, `black`, `debugpy`, `delve`, etc.).
-- **Host-aware Mason behavior:** Go-based tools are only enforced when `go` is on `PATH`; Python pip-backed tools are skipped when a CodeArtifact-only pip index is detected without usable credentials.
+- `lazyvim.json` — enabled LazyVim extras: DAP, tests (neotest), inc-rename, refactoring, Snacks explorer/picker, treesitter-context, project, Prettier, ESLint, and language packs for Go, Python, TypeScript, JSON, YAML, TOML, SQL, Docker, Terraform, Markdown, Git.
+- `lua/config/` — options (`scrolloff = 8`) and custom keymaps.
+- `lua/plugins/colorscheme.lua` — Tokyo Night (night, transparent).
+- `lua/plugins/snacks.lua` — explorer tweaks: remembers its last directory, `x` moves and `d` deletes files.
+- `lua/plugins/tooling.lua` — extra Mason tools, Treesitter parsers, and Trouble signs.
+- `lazy-lock.json` — pinned plugin versions. Commit it after `:Lazy update`; run `:Lazy restore` after pulling.
 
-## Useful custom keys
+## Custom keys
 
-- `<leader>gg` - open LazyGit in the active Snacks Explorer directory
-- `<leader>gG` - open LazyGit in the current working directory
-- `<leader>B` - show buffers, or open the repository root when no file buffer exists
-- `<leader>w` - write buffer
-- `<leader>rn` - rename current word in current buffer
+| Key | Action |
+| --- | --- |
+| `<leader>e`, `<leader>fe` | Snacks explorer in its last directory |
+| `<leader>gg` | LazyGit in the explorer's directory (`<leader>gG`: current working directory) |
+| `<C-/>` | Terminal in the explorer's directory |
+| `<leader>w` | Write buffer |
+| `<leader>rn` | Replace the word under the cursor throughout the buffer |
+| `J` / `K` (visual) | Move selection down / up |
 
-For base keymaps and commands, see LazyVim docs:
-<https://lazyvim.github.io/>
+## Host-aware tooling
 
-Detailed usage guide:
-`DEVELOPER_GUIDE.md`
+`tooling.lua` adapts Mason, LSP and Treesitter to the machine:
+
+- Go tools (`gopls`, `goimports`, `gofumpt`, `delve`) are only installed when `go` is on `PATH`.
+- pip-based tools (`black`, `debugpy`, `ruff`, `sqlfluff`) are skipped when pip points at an AWS CodeArtifact index, where they fail to install without credentials.
+
+If a language feature is missing, check `:Mason` and `:checkhealth`, and make sure the runtime (`go`, `python`, `node`) is installed.
