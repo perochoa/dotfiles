@@ -52,14 +52,10 @@ FEDORA_PACKAGES_PATH="$ROOT_DIR/fedora/packages.txt"
 install_fedora_packages() {
   [[ -f "$FEDORA_PACKAGES_PATH" ]] || error "Fedora package list not found: $FEDORA_PACKAGES_PATH"
 
-  local packages=() missing=() pkg
+  local missing=() pkg
   while read -r pkg; do
-    packages+=("$pkg")
-  done < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$FEDORA_PACKAGES_PATH")
-
-  for pkg in "${packages[@]}"; do
     rpm -q "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
-  done
+  done < <(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$FEDORA_PACKAGES_PATH")
 
   if [[ ${#missing[@]} -eq 0 ]]; then
     log "All Fedora packages are already installed."
