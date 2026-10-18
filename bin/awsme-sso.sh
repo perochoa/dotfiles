@@ -3,6 +3,8 @@
 # Usage: source awsme-sso.sh <profile>   (the aliases in shell/zshrc.local and `cs` do this)
 # Logs in if needed and points the calling shell at the profile. SSO profiles (aws sso login) also export their
 # temporary credentials; login_session profiles (aws login) don't, because the CLI rotates those every 15 minutes.
+
+# shellcheck disable=SC2154 # colour variables (txt*) come from shell/functions.zsh
 if ! (return 0 2>/dev/null); then
   echo "awsme-sso must be sourced: source ${0} <profile>" >&2
   exit 1
@@ -33,6 +35,5 @@ fi
 AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 export AWS_ACCOUNT_ID
 
-# shellcheck disable=SC2154 # colour variables come from shell/functions.zsh
 log_info "Your AWS creds for ${txtblu}${AWS_ENV_NAME}${txtrst}:${txtblu}${AWS_ACCOUNT_ID}${txtrst} are ${_validity}"
 unset _validity
