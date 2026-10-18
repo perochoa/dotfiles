@@ -1,0 +1,7 @@
+# Machine-specific git settings. Linked to ~/.gitconfig; overrides git/config.
+# `git config --global ...` writes here, never to the tracked shared config.
+
+[user]
+  name = John Doe
+  email = john_doe@email.domain
+  username = jdoe

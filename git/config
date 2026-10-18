@@ -1,7 +1,5 @@
-[user]
-  name = John Doe
-  email = john_doe@email.domain
-  username = jdoe
+# Shared git settings for every machine. Linked to ~/.config/git/config by bootstrap.sh.
+# Identity and machine-specific overrides live in ~/.gitconfig (git/gitconfig.local), which wins on conflicts.
 
 [fetch]
   prune = true

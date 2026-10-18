@@ -7,8 +7,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ ! -f "${ROOT_DIR}/git/gitconfig.local" ]]; then
-  cp "${ROOT_DIR}/git/gitconfig.template" "${ROOT_DIR}/git/gitconfig.local"
-  echo "Created git/gitconfig.local from template"
+  cp "${ROOT_DIR}/git/gitconfig.local.template" "${ROOT_DIR}/git/gitconfig.local"
+  echo "Created git/gitconfig.local from template (set your [user] identity)"
+elif grep -qE '^\[(alias|fetch)\]' "${ROOT_DIR}/git/gitconfig.local"; then
+  # Older layouts copied the shared settings into the local file, where they shadow git/config.
+  echo "WARN: git/gitconfig.local has [alias]/[fetch] sections that override git/config; keep only [user] and machine-specific settings" >&2
 fi
 
 if [[ ! -f "${ROOT_DIR}/aws/config.local" ]]; then

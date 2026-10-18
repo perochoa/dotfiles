@@ -104,6 +104,8 @@ fi
 
 link_file "$ROOT_DIR/shell/zshrc" "$HOME/.zshrc"
 link_file "$ROOT_DIR/git/gitconfig.local" "$HOME/.gitconfig"
+[[ "$DRY_RUN" == false ]] && mkdir -p "$HOME/.config/git"
+link_file "$ROOT_DIR/git/config" "$HOME/.config/git/config"
 link_file "$ROOT_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
 link_file "$ROOT_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
 link_dir "$ROOT_DIR/nvim" "$HOME/.config/nvim"
