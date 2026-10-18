@@ -52,6 +52,7 @@ Every AI coding assistant reads the same instructions and skills from `ai/`, so 
 | `ai/AGENTS.md` (global instructions) | `~/.claude/CLAUDE.md`, `~/.copilot/copilot-instructions.md` | Claude Code, Copilot CLI |
 | `ai/skills/` (`SKILL.md` skills) | `~/.agents/skills`, and each skill as `~/.claude/skills/<name>` | Copilot CLI, Claude Code |
 | `ai/claude/settings.json` | `~/.claude/settings.json` | Claude Code only (tool-specific settings) |
+| `ai/claude/hooks/` | `~/.claude/hooks` | Claude Code only. `commit-msg-check.py` blocks `git commit` messages that break the commit rules in `ai/AGENTS.md` (needs `python3`) |
 
 Skills are linked one by one into `~/.claude/skills` because Claude Code also installs its own skills there. To support another assistant, add a `link` for its instructions file and skills directory in `bootstrap.sh`; tool-specific settings go in `ai/<tool>/`. The repo-root `AGENTS.md` is guidance for working on this repo, not the global instructions. Project-specific assistant config stays in each project.
 

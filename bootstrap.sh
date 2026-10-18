@@ -103,6 +103,7 @@ done
 link ai/AGENTS.md .claude/CLAUDE.md
 link ai/AGENTS.md .copilot/copilot-instructions.md
 link ai/claude/settings.json .claude/settings.json
+link ai/claude/hooks .claude/hooks
 link ai/skills .agents/skills
 # ~/.claude/skills also holds skills installed by Claude Code itself, so link each skill individually.
 for skill in "$ROOT_DIR"/ai/skills/*/; do

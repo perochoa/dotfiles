@@ -62,11 +62,23 @@ fi
 
 log "symlinks"
 for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.toml .config/nvim \
-  .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/skills/python-patterns \
+  .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/hooks .claude/skills/python-patterns \
   .copilot/copilot-instructions.md .agents/skills \
   .local/bin/clip .local/bin/awsme-sso; do
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
 done
+
+log "claude commit-message hook"
+if command -v python3 >/dev/null 2>&1; then
+  hook="$TEST_HOME/.claude/hooks/commit-msg-check.py"
+  repo="$TEST_HOME/hook-repo"
+  git init -q -b main "$repo"
+  commit_json() { printf '{"tool_input":{"command":"git commit -m \\"%s\\""},"cwd":"%s"}' "$1" "$repo"; }
+  commit_json "add config" | "$hook" || fail "commit hook rejected a valid message"
+  if commit_json "Add config" | "$hook" 2>/dev/null; then fail "commit hook accepted an uppercase message"; fi
+else
+  log "python3 not installed; skipping commit hook test"
+fi
 
 log "git config layers"
 [[ "$(HOME="$TEST_HOME" git config --global --get user.name)" == "John Doe" ]] || fail "identity not read from ~/.gitconfig"

@@ -4,5 +4,20 @@
     "commit": "",
     "pr": "",
     "sessionUrl": false
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/commit-msg-check.py",
+            "timeout": 10,
+            "statusMessage": "checking commit message"
+          }
+        ]
+      }
+    ]
   }
 }
