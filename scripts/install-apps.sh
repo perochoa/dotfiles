@@ -16,6 +16,7 @@ EOF
 }
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO  $*"; }
+warn() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN  $*" >&2; }
 error() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR $*" >&2
   exit 1
@@ -100,9 +101,44 @@ if [[ "$DRY_RUN" == true ]]; then
   else
     log "Some Brewfile dependencies are missing. Re-run without --dry-run to install."
   fi
-  exit 0
+else
+  log "Installing/updating packages from Brewfile: $BREWFILE_PATH"
+  brew bundle --file "$BREWFILE_PATH"
+  log "Homebrew bundle complete."
 fi
 
-log "Installing/updating packages from Brewfile: $BREWFILE_PATH"
-brew bundle --file "$BREWFILE_PATH"
-log "Homebrew bundle complete."
+# Linux counterparts of the Brewfile's macOS-only casks. Failures warn instead of aborting.
+install_linux_extras() {
+  if fc-list 2>/dev/null | grep -qi "Hack Nerd Font"; then
+    log "Hack Nerd Font is already installed."
+  elif [[ "$DRY_RUN" == true ]]; then
+    log "DRY RUN: would install Hack Nerd Font to ~/.local/share/fonts/HackNerdFont"
+  else
+    local font_dir="$HOME/.local/share/fonts/HackNerdFont"
+    log "Installing Hack Nerd Font to $font_dir"
+    mkdir -p "$font_dir"
+    if curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Hack.tar.xz | tar -xJ -C "$font_dir"; then
+      fc-cache -f "$font_dir" >/dev/null
+    else
+      warn "Hack Nerd Font download failed; install it manually from https://www.nerdfonts.com/font-downloads"
+    fi
+  fi
+
+  if command -v copilot >/dev/null 2>&1; then
+    log "Copilot CLI is already installed."
+  elif ! command -v npm >/dev/null 2>&1; then
+    warn "npm not found; skipping Copilot CLI (node comes from the Brewfile)"
+  elif [[ "$DRY_RUN" == true ]]; then
+    log "DRY RUN: would run npm install -g @github/copilot"
+  else
+    log "Installing Copilot CLI with npm"
+    npm install -g @github/copilot || warn "Copilot CLI install failed"
+  fi
+
+  command -v ghostty >/dev/null 2>&1 ||
+    warn "Ghostty is not installed; it is not in the Fedora repos (see README for COPR options)"
+}
+
+if [[ "$(uname -s)" == "Linux" ]]; then
+  install_linux_extras
+fi
