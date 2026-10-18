@@ -1,0 +1,18 @@
+# Fedora packages installed with dnf by scripts/install-apps.sh.
+# Everything else comes from homebrew/Brewfile via Linuxbrew.
+
+# Shell
+zsh
+
+# Homebrew prerequisites
+curl
+file
+gcc
+git
+procps-ng
+
+# Containers (native on Fedora; macOS gets podman from Brewfile)
+podman
+
+# Clipboard for bin/clip.sh (Wayland)
+wl-clipboard

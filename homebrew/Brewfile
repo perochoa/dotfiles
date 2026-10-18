@@ -22,7 +22,6 @@ brew "ncdu"
 brew "neovim"
 brew "nvm"
 brew "node"
-brew "podman"
 brew "postgresql"
 brew "pyenv"
 brew "python"
@@ -40,6 +39,12 @@ brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 brew "starship"
 
-cask "copilot-cli"
-cask "font-hack-nerd-font"
-cask "ghostty"
+# macOS-only: casks are unsupported on Linux, and Fedora ships podman natively.
+# On Fedora these come from fedora/packages.txt (see README).
+if OS.mac?
+  brew "podman"
+
+  cask "copilot-cli"
+  cask "font-hack-nerd-font"
+  cask "ghostty"
+end
