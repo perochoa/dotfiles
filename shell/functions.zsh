@@ -1,20 +1,13 @@
 #!/bin/zsh
 
-# Colors Constants
-txtred="\e[0;31m" # Red
-txtgrn="\e[0;32m" # Green
-txtylw="\e[0;33m" # Yellow
-txtblu="\e[0;34m" # Blue
-txtpur="\e[0;35m" # Purple
-txtcyn="\e[0;36m" # Cyan
-
-bldred="\e[0;31m" # Red
-bldgrn="\e[0;32m" # Green
-bldylw="\e[0;33m" # Yellow
-bldblu="\e[0;34m" # Blue
-bldpur="\e[0;35m" # Purple
-bldcyn="\e[0;36m" # Cyan
-
+# Colours (also used by bin/awsme-sso.sh)
+txtcyn="\e[0;36m"
+txtblu="\e[0;34m"
+txtylw="\e[0;33m"
+bldred="\e[1;31m"
+bldgrn="\e[1;32m"
+bldylw="\e[1;33m"
+bldpur="\e[1;35m"
 txtrst="\e[0m"
 
 __date_prefix() {
@@ -45,20 +38,10 @@ function weather() {
 
 # Context Switch
 cs() {
+  # Contexts whose AWS profile differs from the context name
   declare -A CONTEXT_TO_AWS_ALIAS=(
-    ["aid1"]="aid1"
-    ["ais1"]="ais1"
-    ["aip1"]="aip1"
-    ["aid2"]="aid2"
-    ["ais2"]="ais2"
-    ["aip2"]="aip2"
-    ["dtd"]="dtd"
-    ["dts"]="dts"
-    ["dtp"]="dtp"
-    ["msd1"]="msd1"
     ["mss1"]="ais1"
     ["msp1"]="aip1"
-    ["msd2"]="msd2"
     ["mss2"]="ais2"
     ["msp2"]="aip2"
   )
@@ -83,12 +66,12 @@ cs() {
 
   local target_context="$1"
 
-  if [[ ! -v "CONTEXT_TO_AWS_ALIAS[$target_context]" ]]; then
+  if [[ ! -v "CONTEXT_TO_PATH[$target_context]" ]]; then
     log_error "Context '$target_context' not found in mapping"
     return 1
   fi
 
-  local aws_profile="${CONTEXT_TO_AWS_ALIAS[$target_context]}"
+  local aws_profile="${CONTEXT_TO_AWS_ALIAS[$target_context]:-$target_context}"
   local target_path="${CONTEXT_TO_PATH[$target_context]}"
   local git_root=$(git rev-parse --show-toplevel 2>/dev/null)
   local new_path="${git_root}/${target_path}"

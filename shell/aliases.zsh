@@ -15,16 +15,11 @@ alias history='history 0'
 alias cg='cd $(git rev-parse --show-toplevel)'
 alias grep='grep --color=auto'
 
-# AWS Alias
-alias dts='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh dts'
-alias dtp='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh dtp'
-alias dtd='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh dtd'
-alias ais1='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh ais1'
-alias aip1='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aip1'
-alias aid1='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aid1'
-alias ais2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh ais2'
-alias aip2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aip2'
-alias aid2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aid2'
+# AWS: each alias sources awsme-sso for the profile of the same name
+for _profile in dts dtp dtd ais1 aip1 aid1 ais2 aip2 aid2; do
+  alias "$_profile=source \${HOME}/.config/dotfiles/bin/awsme-sso.sh $_profile"
+done
+unset _profile
 alias aws-copy-creds='env | grep -i "AWS" | ${HOME}/.config/dotfiles/bin/clip.sh'
 
 # Kubernetes Alias
