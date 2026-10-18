@@ -24,6 +24,33 @@ I don't want to repeat myself. When I correct, redirect, or state a preference a
 4. Update the entry's status (`codified: <where>`, or `declined` — then don't ask about it again).
 Don't ask about things already codified unless they were broken; then propose enforcing them.
 
+## Session handoffs
+I clear sessions often (new feature, new component, or a session that ran long), so in every git
+repository keep a handoff document that lets the next session pick up without me re-explaining.
+- **One doc per feature/branch**: `.handoff/<branch>.md`, with `/` in the branch name replaced by `-`
+  (`feat/room-creation` → `.handoff/feat-room-creation.md`). On `main`, reuse the doc for the topic
+  you're working on, or create one named after the branch you're about to create.
+- **Where it lives depends on the repo**:
+  - Repo tracks an `AGENTS.md` or `CLAUDE.md` (root or `.claude/CLAUDE.md`): `.handoff/` sits in the
+    worktree and is committed on the feature branch with the work it describes.
+  - Repo has neither: the handoffs are local only. **Don't create, commit, or push an `AGENTS.md`
+    or `CLAUDE.md`** for this (or any other reason I didn't ask for). Keep `.handoff/` in the main
+    worktree, so it survives removing other worktrees, and list `/.handoff/` in the repo's
+    `$(git rev-parse --git-common-dir)/info/exclude`, never in `.gitignore`. Never `git add -f` it.
+- **Start of a session**: read the doc for the current branch, and any others relevant to the task,
+  before doing anything. Claude Code's `session-handoff.py` hook prints the path, the mode, and the
+  doc; other assistants check `.handoff/` themselves.
+- **Keep it current**: update it after each meaningful step (a decision made, a task done, a
+  blocker found), before committing, and before you stop. Don't leave it for the end of the
+  session: I may clear it without warning.
+- **Contents**: short and rewritten in place, not an append-only log. Remove anything that's no
+  longer true. Sections:
+  `Goal`, `Status` (done / in progress / next, as checklists), `Decisions` (with the why),
+  `Gotchas` (dead ends, surprises, commands that matter), `Key files`, `Open questions`.
+  Write facts the code and git history don't already show. No secrets or credentials.
+- When the work is merged or abandoned, set `Status` to done or abandoned. Delete the doc once
+  it stops being useful.
+
 ## Git branches
 - **Never commit to, push to, merge into, or rebase `main` (or `master`) directly.** Before changing
   any tracked file, create a branch from an up-to-date `main` (`git switch main && git pull --rebase`,
