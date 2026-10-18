@@ -19,7 +19,7 @@ alias aid1='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aid1'
 alias ais2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh ais2'
 alias aip2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aip2'
 alias aid2='source ${HOME}/.config/dotfiles/bin/awsme-sso.sh aid2'
-alias aws-copy-creds='env | grep -i "AWS" | pbcopy'
+alias aws-copy-creds='env | grep -i "AWS" | ${HOME}/.config/dotfiles/bin/clip.sh'
 
 # Kubernetes Alias
 alias kl='kubectl'
