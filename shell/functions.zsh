@@ -30,13 +30,11 @@ log_error() {
   printf "%b\n" "$(__date_prefix)${bldred} [ERROR] ${txtrst}${1}"
 }
 
-function weather() {
-  local location
-  location="${1:-Toronto,ON}"
-  curl "v2.wttr.in/${location}"
+weather() {
+  curl "v2.wttr.in/${1:-Toronto,ON}"
 }
 
-# Context Switch
+# Context switch: kubectl context + AWS credentials + matching terraform directory
 cs() {
   # Contexts whose AWS profile differs from the context name
   declare -A CONTEXT_TO_AWS_ALIAS=(
@@ -90,7 +88,7 @@ cs() {
   fi
 
   log_info "Switching AWS profile to: $aws_profile"
-  source "${HOME}/.config/dotfiles/bin/awsme-sso.sh" "$aws_profile"
+  source "${DOTFILES}/bin/awsme-sso.sh" "$aws_profile"
   log_info "✓ Current kubectl context: $(kubectx -c)"
   log_info "✓ Current AWS profile: ${AWS_ENV_NAME:-not set}"
   [[ -n "$git_root" ]] && log_info "✓ Current directory: $PWD"

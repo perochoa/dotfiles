@@ -10,18 +10,18 @@ else
   alias l="ls -lAh"
   alias ll="ls -lAh"
 fi
-alias path='echo -e ${PATH//:/\\n} | sort | uniq'
+alias path='print -rl -- $path'
 alias history='history 0'
 alias cg='cd $(git rev-parse --show-toplevel)'
 alias grep='grep --color=auto'
 
 # AWS: each alias sources awsme-sso for the profile of the same name
 for _profile in dts dtp dtd ais1 aip1 aid1 ais2 aip2 aid2; do
-  alias "$_profile=source \${HOME}/.config/dotfiles/bin/awsme-sso.sh $_profile"
+  alias "$_profile=source \${DOTFILES}/bin/awsme-sso.sh $_profile"
 done
 unset _profile
-alias aws-copy-creds='env | grep -i "AWS" | ${HOME}/.config/dotfiles/bin/clip.sh'
+alias aws-copy-creds='env | grep -i "AWS" | ${DOTFILES}/bin/clip.sh'
 
-# Kubernetes Alias
+# Kubernetes
 alias kl='kubectl'
 alias kx='kubectx'

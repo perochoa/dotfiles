@@ -2,8 +2,6 @@
 
 # Environment shared by macOS and Linux. Loaded first so later modules can rely on it.
 
-dotfiles_dir="${HOME}/.config/dotfiles"
-
 # Homebrew: macOS (Apple Silicon / Intel) or Linuxbrew. Skipped if already on PATH (e.g. via ~/.zprofile).
 if (( ! $+commands[brew] )); then
   for _brew in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew "$HOME/.linuxbrew/bin/brew"; do
@@ -35,10 +33,10 @@ setopt hist_ignore_space
 setopt share_history
 
 # AWS / Kubernetes: point at the local files created from tracked templates
-[[ -f "${dotfiles_dir}/aws/config.local" ]] && export AWS_CONFIG_FILE="${dotfiles_dir}/aws/config.local"
+[[ -f "${DOTFILES}/aws/config.local" ]] && export AWS_CONFIG_FILE="${DOTFILES}/aws/config.local"
 
 _kubeconfigs=()
-for _kc in "${dotfiles_dir}/kube/config.eks.local.yaml" "${HOME}/.kube/config.local"; do
+for _kc in "${DOTFILES}/kube/config.eks.local.yaml" "${HOME}/.kube/config.local"; do
   [[ -f $_kc ]] && _kubeconfigs+=("$_kc")
 done
 (( ${#_kubeconfigs} )) && export KUBECONFIG="${(j.:.)_kubeconfigs}"

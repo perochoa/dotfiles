@@ -21,7 +21,7 @@ cd ~/.config/dotfiles
 
 | Path | Contents |
 | --- | --- |
-| `shell/` | zsh config. `zshrc` loads `env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional `zshrc.local` |
+| `shell/` | zsh config. `zshrc` sets `$DOTFILES` and loads `env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional `zshrc.local` |
 | `git/` | `config` (shared settings) and `gitconfig.local.template` (identity) |
 | `homebrew/Brewfile` | Packages for both OSes; casks and macOS-only formulae sit inside `if OS.mac?` |
 | `fedora/packages.txt` | Native Fedora packages installed with `dnf` |

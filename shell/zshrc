@@ -1,3 +1,12 @@
 #!/bin/zsh
 
-source "${HOME}/.config/dotfiles/shell/bootstrap.zsh"
+# Linked as ~/.zshrc by bootstrap.sh. The repo lives at ~/.config/dotfiles.
+export DOTFILES="${HOME}/.config/dotfiles"
+
+for module in env aliases functions terminal; do
+  source "${DOTFILES}/shell/${module}.zsh"
+done
+unset module
+
+# Machine-specific overrides (untracked)
+[[ -r "${DOTFILES}/shell/zshrc.local" ]] && source "${DOTFILES}/shell/zshrc.local"
