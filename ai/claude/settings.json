@@ -29,6 +29,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/session-handoff.py",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

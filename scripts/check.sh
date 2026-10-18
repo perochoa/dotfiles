@@ -86,8 +86,19 @@ if command -v python3 >/dev/null 2>&1; then
     fail "correction-check hook ignored a correction"
   [[ -z "$(printf '{"prompt":"list the files"}' | "$TEST_HOME/.claude/hooks/correction-check.py")" ]] ||
     fail "correction-check hook fired on a normal prompt"
+  handoff="$TEST_HOME/.claude/hooks/session-handoff.py"
+  starts() { printf '{"cwd":"%s"}' "$1" | "$handoff"; }
+  mkdir -p "$repo/.handoff" && echo "# goal: new config" >"$repo/.handoff/feat-new-config.md"
+  starts "$repo" | grep -q "goal: new config" || fail "session-handoff did not load the branch doc"
+  grep -qx "/.handoff/" "$repo/.git/info/exclude" || fail "session-handoff did not exclude .handoff/"
+  [[ -z "$(git -C "$repo" status --porcelain)" ]] || fail "local .handoff/ shows up in git status"
+  shared="$TEST_HOME/handoff-shared" && git init -q -b main "$shared" && touch "$shared/AGENTS.md"
+  git -C "$shared" add AGENTS.md
+  starts "$shared" | grep -q "Mode: committed" || fail "session-handoff missed a tracked AGENTS.md"
+  ! grep -qx "/.handoff/" "$shared/.git/info/exclude" || fail "session-handoff excluded a committed .handoff/"
+  [[ -z "$(starts "$TEST_HOME")" ]] || fail "session-handoff printed outside a git repo"
 else
-  log "python3 not installed; skipping git-guard and correction-check tests"
+  log "python3 not installed; skipping claude hook tests"
 fi
 
 log "git config layers"
