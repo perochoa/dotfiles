@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Brewfile parses
+        run: brew bundle list --all --file homebrew/Brewfile
+      - name: Checks
+        run: ./scripts/check.sh
+
+  fedora:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:44
+    steps:
+      - name: Install prerequisites
+        run: dnf install -y --setopt=install_weak_deps=False git zsh ShellCheck findutils
+      - uses: actions/checkout@v4
+      - name: Checks
+        run: ./scripts/check.sh
