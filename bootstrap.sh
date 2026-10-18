@@ -117,11 +117,14 @@ link_file "$ROOT_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
 link_dir "$ROOT_DIR/nvim" "$HOME/.config/nvim"
 link_dir "$ROOT_DIR/copilot/skills" "$HOME/.copilot/skills"
 
-# Ghostty: on Linux it reads ~/.config/ghostty/config. macOS uses an include from
-# ~/Library/Application Support/com.mitchellh.ghostty/config instead (see ghostty/README.md).
-if [[ "$(uname -s)" == "Linux" ]]; then
-  [[ "$DRY_RUN" == false ]] && mkdir -p "$HOME/.config/ghostty"
-  link_file "$ROOT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+# Ghostty reads ~/.config/ghostty/config on both macOS and Linux.
+[[ "$DRY_RUN" == false ]] && mkdir -p "$HOME/.config/ghostty"
+link_file "$ROOT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
+
+# Older setups included the repo config from macOS's Application Support file; that would now load it twice.
+ghostty_macos_config="$HOME/Library/Application Support/com.mitchellh.ghostty/config"
+if [[ -f "$ghostty_macos_config" ]] && grep -q '^config-file *=.*dotfiles/ghostty/config' "$ghostty_macos_config"; then
+  echo "WARN: remove the dotfiles config-file line from $ghostty_macos_config (now loaded from ~/.config/ghostty/config)" >&2
 fi
 
 # Local bin scripts (strip .sh so they're callable without extension)
