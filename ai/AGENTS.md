@@ -77,3 +77,8 @@ repository keep a handoff document that lets the next session pick up without me
   **all lowercase**, including the body.
 - Prefix the message with the branch name and a colon: `feat/room-creation: add create room handler`.
 - One-line subject; add a body only when the reason for the change isn't obvious.
+- Commit as you go: make each commit when its logical piece of work is finished and checked, in
+  the order the work was done, instead of batching every commit at the end of a task. That way
+  the history is in chronological order and the commits are naturally spread out in time.
+- Commit timestamps must be real. Never set fake author or committer dates (`--date`,
+  `GIT_AUTHOR_DATE`, `GIT_COMMITTER_DATE`, or rewriting dates in a rebase).
