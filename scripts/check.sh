@@ -41,8 +41,18 @@ mkdir -p "$TEST_HOME/.config"
 cp -R "$ROOT_DIR" "$TEST_HOME/.config/dotfiles"
 find "$TEST_HOME/.config/dotfiles" -name '*.local' -delete
 
+# Pre-existing configs with the same basename must both survive as backups.
+mkdir -p "$TEST_HOME/.config/git" "$TEST_HOME/.config/ghostty"
+echo old-git >"$TEST_HOME/.config/git/config"
+echo old-ghostty >"$TEST_HOME/.config/ghostty/config"
+
 log "bootstrap (fresh)"
 HOME="$TEST_HOME" "$TEST_HOME/.config/dotfiles/bootstrap.sh" --skip-shell >/dev/null
+
+log "backups"
+for backup in .config/git/config:old-git .config/ghostty/config:old-ghostty; do
+  grep -qx "${backup#*:}" "$TEST_HOME"/.backups/dotfiles/*/"${backup%%:*}" || fail "backup lost: ~/${backup%%:*}"
+done
 
 log "bootstrap (idempotent)"
 rerun="$(HOME="$TEST_HOME" "$TEST_HOME/.config/dotfiles/bootstrap.sh" --skip-shell)"

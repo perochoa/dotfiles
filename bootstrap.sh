@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Wire standard dotfile symlinks, create local templates, and run a secrets guard.
+# Create local files from templates, symlink dotfiles into $HOME, and make zsh the login shell.
 
 usage() {
   cat <<'EOF'
@@ -41,99 +41,61 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-link_file() {
-  local src="$1"
-  local dst="$2"
-  local backup
-  backup="$BACKUP_DIR/$(basename "$dst").backup"
-
-  if [[ -L "$dst" ]]; then
-    if [[ "$(readlink "$dst")" == "$src" ]]; then
-      echo "OK: $dst already linked"
-      return 0
-    fi
-  elif [[ -e "$dst" ]]; then
-    echo "Backing up $dst -> $backup"
-    if [[ "$DRY_RUN" == false ]]; then
-      mkdir -p "$BACKUP_DIR"
-      mv "$dst" "$backup"
-    fi
-  fi
-
-  echo "Linking $dst -> $src"
-  if [[ "$DRY_RUN" == false ]]; then
-    ln -sfn "$src" "$dst"
+run() {
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "DRY RUN: $*"
+  else
+    "$@"
   fi
 }
 
-link_dir() {
-  local src="$1"
-  local dst="$2"
-  local backup
-  backup="$BACKUP_DIR/$(basename "$dst").backup"
-
-  if [[ -L "$dst" ]]; then
-    if [[ "$(readlink "$dst")" == "$src" ]]; then
-      echo "OK: $dst already linked"
-      return 0
-    fi
-  elif [[ -d "$dst" ]]; then
-    echo "Backing up $dst -> $backup"
-    if [[ "$DRY_RUN" == false ]]; then
-      mkdir -p "$BACKUP_DIR"
-      mv "$dst" "$backup"
-    fi
-  elif [[ -e "$dst" ]]; then
-    echo "Cannot replace non-directory path: $dst" >&2
-    exit 1
-  fi
-
-  echo "Linking $dst -> $src"
-  if [[ "$DRY_RUN" == false ]]; then
-    ln -sfn "$src" "$dst"
-  fi
+# Copy a tracked template to its untracked local path unless it already exists.
+copy_template() {
+  local template="$ROOT_DIR/$1" local_file="$ROOT_DIR/$2"
+  [[ -f "$local_file" ]] && return 0
+  echo "Creating $2 from $1"
+  run cp "$template" "$local_file"
 }
 
-if [[ "$DRY_RUN" == false ]]; then
-  "$ROOT_DIR/scripts/bootstrap-local.sh"
-else
-  echo "DRY RUN: would run scripts/bootstrap-local.sh"
+# Symlink $HOME/<dst> to <src>, backing up anything already there under the same relative path.
+link() {
+  local src="$ROOT_DIR/$1" dst="$HOME/$2"
+  if [[ -L "$dst" && "$(readlink "$dst")" == "$src" ]]; then
+    echo "OK: ~/$2"
+    return 0
+  fi
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    echo "Backing up ~/$2 -> $BACKUP_DIR/$2"
+    run mkdir -p "$(dirname "$BACKUP_DIR/$2")"
+    run mv "$dst" "$BACKUP_DIR/$2"
+  fi
+  echo "Linking ~/$2 -> $1"
+  run mkdir -p "$(dirname "$dst")"
+  run ln -sfn "$src" "$dst"
+}
+
+copy_template git/gitconfig.local.template git/gitconfig.local
+copy_template aws/config.template aws/config.local
+copy_template kube/config.eks.template.yaml kube/config.eks.local.yaml
+
+# Older layouts copied the shared git settings into the local file, where they shadow git/config.
+if [[ -f "$ROOT_DIR/git/gitconfig.local" ]] && grep -qE '^\[(alias|fetch)\]' "$ROOT_DIR/git/gitconfig.local"; then
+  echo "WARN: git/gitconfig.local has [alias]/[fetch] sections that override git/config; keep only [user] and machine-specific settings" >&2
 fi
 
-if [[ "$DRY_RUN" == false ]]; then
-  chmod +x "$ROOT_DIR/scripts/bootstrap-local.sh"
-  mkdir -p "$HOME/.config"
-  mkdir -p "$HOME/.copilot"
-  mkdir -p "$HOME/.local/bin"
-else
-  echo "DRY RUN: would create $HOME/.config, $HOME/.copilot, $HOME/.local/bin if missing"
-  echo "DRY RUN: backups would go to $BACKUP_DIR"
-fi
+link shell/zshrc .zshrc
+link git/gitconfig.local .gitconfig
+link git/config .config/git/config
+link tmux/tmux.conf .tmux.conf
+link starship/starship.toml .config/starship.toml
+link nvim .config/nvim
+link ghostty/config .config/ghostty/config
+link copilot/skills .copilot/skills
 
-link_file "$ROOT_DIR/shell/zshrc" "$HOME/.zshrc"
-link_file "$ROOT_DIR/git/gitconfig.local" "$HOME/.gitconfig"
-[[ "$DRY_RUN" == false ]] && mkdir -p "$HOME/.config/git"
-link_file "$ROOT_DIR/git/config" "$HOME/.config/git/config"
-link_file "$ROOT_DIR/tmux/tmux.conf" "$HOME/.tmux.conf"
-link_file "$ROOT_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
-link_dir "$ROOT_DIR/nvim" "$HOME/.config/nvim"
-link_dir "$ROOT_DIR/copilot/skills" "$HOME/.copilot/skills"
-
-# Ghostty reads ~/.config/ghostty/config on both macOS and Linux.
-[[ "$DRY_RUN" == false ]] && mkdir -p "$HOME/.config/ghostty"
-link_file "$ROOT_DIR/ghostty/config" "$HOME/.config/ghostty/config"
-
-# Older setups included the repo config from macOS's Application Support file; that would now load it twice.
-ghostty_macos_config="$HOME/Library/Application Support/com.mitchellh.ghostty/config"
-if [[ -f "$ghostty_macos_config" ]] && grep -q '^config-file *=.*dotfiles/ghostty/config' "$ghostty_macos_config"; then
-  echo "WARN: remove the dotfiles config-file line from $ghostty_macos_config (now loaded from ~/.config/ghostty/config)" >&2
-fi
-
-# Local bin scripts (strip .sh so they're callable without extension)
-for _script in "$ROOT_DIR/bin/"*.sh; do
-  [[ -f "$_script" ]] || continue
-  _name="$(basename "${_script%.sh}")"
-  link_file "$_script" "$HOME/.local/bin/$_name"
+# bin/ scripts go on PATH without their .sh extension
+for script in "$ROOT_DIR"/bin/*.sh; do
+  name="$(basename "$script" .sh)"
+  link "bin/$name.sh" ".local/bin/$name"
 done
 
 # Make the system zsh the login shell (macOS defaults to zsh; Fedora defaults to bash).
@@ -163,15 +125,12 @@ ensure_zsh_login_shell() {
   fi
 
   echo "Changing login shell: $current -> $zsh_path"
-  if [[ "$DRY_RUN" == true ]]; then
-    return 0
-  fi
   if command -v chsh >/dev/null 2>&1; then
-    chsh -s "$zsh_path"
+    run chsh -s "$zsh_path"
   else
-    sudo usermod --shell "$zsh_path" "$USER"
+    run sudo usermod --shell "$zsh_path" "$USER"
   fi
-  echo "Log out and back in for the new login shell to take effect."
+  [[ "$DRY_RUN" == true ]] || echo "Log out and back in for the new login shell to take effect."
 }
 
 if [[ "$SKIP_SHELL" == false ]]; then
