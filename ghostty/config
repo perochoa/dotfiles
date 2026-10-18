@@ -34,3 +34,11 @@ keybind = super+opt+l=goto_split:right
 keybind = super+opt+k=goto_split:up
 keybind = super+opt+j=goto_split:down
 keybind = super+0=reset_font_size
+# Linux alternative using Ctrl + Alt + HJKL
+keybind = ctrl+alt+h=goto_split:left
+keybind = ctrl+alt+l=goto_split:right
+keybind = ctrl+alt+k=goto_split:up
+keybind = ctrl+alt+j=goto_split:down
+keybind = ctrl+d=new_split:right
+keybind = ctrl+shift+d=new_split:down
+keybind = ctrl+w=close_surface
