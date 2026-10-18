@@ -27,7 +27,7 @@ Enabled via `lazyvim.json`:
   - Terraform
   - Git
 
-### 2. Plugins added in `lua/plugins/example.lua`
+### 2. Tooling added in `lua/plugins/tooling.lua`
 
 - Trouble diagnostics signs enabled
 - Extended Mason tool installation set
