@@ -12,7 +12,7 @@
 
 - Use concise, imperative commit subjects.
 - Prefer one logical change per commit.
-- Mention affected surfaces (for example `shell`, `nvim`, `aws`, `kube`, `copilot`) in the body when helpful.
+- Mention affected surfaces (for example `shell`, `nvim`, `aws`, `kube`, `ai`) in the body when helpful.
 
 ## Validation before commit
 

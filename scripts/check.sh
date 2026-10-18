@@ -15,7 +15,7 @@ fail() {
 cd "$ROOT_DIR"
 
 bash_scripts() {
-  printf '%s\n' bootstrap.sh scripts/*.sh bin/*.sh copilot/skills/*/scripts/*.sh
+  printf '%s\n' bootstrap.sh scripts/*.sh bin/*.sh ai/skills/*/scripts/*.sh
 }
 
 if command -v shellcheck >/dev/null 2>&1; then
@@ -62,7 +62,9 @@ fi
 
 log "symlinks"
 for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.toml .config/nvim \
-  .config/ghostty/config .copilot/skills .local/bin/clip .local/bin/awsme-sso; do
+  .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/skills/python-patterns \
+  .copilot/copilot-instructions.md .agents/skills \
+  .local/bin/clip .local/bin/awsme-sso; do
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
 done
 

@@ -14,7 +14,7 @@ cd ~/.config/dotfiles
 `bootstrap.sh` is safe to re-run. It:
 
 1. Creates `git/gitconfig.local`, `aws/config.local`, `kube/config.eks.local.yaml` and `shell/zshrc.local` from their templates if missing.
-2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, `~/.copilot/skills`, and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
+2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, the AI assistant config from `ai/` (see below), and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
 3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out. The change applies to new login sessions: log out and back in, or run `exec zsh` in open terminals. `~/.zshrc` is zsh-only and refuses to load in bash.
 
 ## Layout
@@ -29,7 +29,7 @@ cd ~/.config/dotfiles
 | `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
 | `bin/` | `clip.sh` (cross-platform clipboard) and `awsme-sso.sh` (AWS sign-in for SSO and `aws login` profiles; must be sourced) |
 | `aws/`, `kube/` | Config templates; the shell points `AWS_CONFIG_FILE` and `KUBECONFIG` at the local copies |
-| `copilot/skills/` | Copilot CLI skills |
+| `ai/` | Shared config for AI coding assistants (see [AI assistants](#ai-assistants)) |
 | `scripts/` | `install-apps.sh`, `macos-defaults.sh`, `linux-defaults.sh`, `check.sh` |
 
 ## Platforms
@@ -42,6 +42,18 @@ Everything detects the OS at runtime, so the same files serve both machines.
   2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus casks), then Hack Nerd Font and the Copilot CLI.
   3. Install Ghostty from a COPR (it isn't in the official repos; see <https://ghostty.org/docs/install/binary>), e.g. `sudo dnf copr enable scottames/ghostty && sudo dnf install ghostty`. Check that the COPR builds for your Fedora release first.
   4. `./scripts/linux-defaults.sh` applies the GNOME equivalents of the macOS defaults (key repeat, folders first).
+
+## AI assistants
+
+Every AI coding assistant reads the same instructions and skills from `ai/`, so they all behave the same:
+
+| Source | Linked as | Used by |
+| --- | --- | --- |
+| `ai/AGENTS.md` (global instructions) | `~/.claude/CLAUDE.md`, `~/.copilot/copilot-instructions.md` | Claude Code, Copilot CLI |
+| `ai/skills/` (`SKILL.md` skills) | `~/.agents/skills`, and each skill as `~/.claude/skills/<name>` | Copilot CLI, Claude Code |
+| `ai/claude/settings.json` | `~/.claude/settings.json` | Claude Code only (tool-specific settings) |
+
+Skills are linked one by one into `~/.claude/skills` because Claude Code also installs its own skills there. To support another assistant, add a `link` for its instructions file and skills directory in `bootstrap.sh`; tool-specific settings go in `ai/<tool>/`. The repo-root `AGENTS.md` is guidance for working on this repo, not the global instructions. Project-specific assistant config stays in each project.
 
 ## Machine-specific settings
 

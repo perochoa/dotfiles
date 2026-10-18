@@ -91,7 +91,24 @@ link tmux/tmux.conf .tmux.conf
 link starship/starship.toml .config/starship.toml
 link nvim .config/nvim
 link ghostty/config .config/ghostty/config
-link copilot/skills .copilot/skills
+
+# AI coding assistants share one set of instructions (ai/AGENTS.md) and skills (ai/skills).
+# Remove links left behind by older layouts (copilot/, claude/) or by skills since deleted.
+for stale in "$HOME/.copilot/skills" "$HOME"/.claude/skills/* "$HOME"/.claude/CLAUDE.md "$HOME"/.claude/settings.json; do
+  if [[ -L "$stale" && ! -e "$stale" && "$(readlink "$stale")" == "$ROOT_DIR"/* ]]; then
+    echo "Removing stale link ~/${stale#"$HOME"/}"
+    run rm "$stale"
+  fi
+done
+link ai/AGENTS.md .claude/CLAUDE.md
+link ai/AGENTS.md .copilot/copilot-instructions.md
+link ai/claude/settings.json .claude/settings.json
+link ai/skills .agents/skills
+# ~/.claude/skills also holds skills installed by Claude Code itself, so link each skill individually.
+for skill in "$ROOT_DIR"/ai/skills/*/; do
+  name="$(basename "$skill")"
+  link "ai/skills/$name" ".claude/skills/$name"
+done
 
 # bin/ scripts go on PATH without their .sh extension
 for script in "$ROOT_DIR"/bin/*.sh; do
