@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # paginate-api.sh — Shared pagination helper for GitLab API endpoints
 #
 # Usage:

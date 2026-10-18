@@ -44,7 +44,8 @@ done
 link_file() {
   local src="$1"
   local dst="$2"
-  local backup="$BACKUP_DIR/$(basename "$dst").backup"
+  local backup
+  backup="$BACKUP_DIR/$(basename "$dst").backup"
 
   if [[ -L "$dst" ]]; then
     if [[ "$(readlink "$dst")" == "$src" ]]; then
@@ -68,7 +69,8 @@ link_file() {
 link_dir() {
   local src="$1"
   local dst="$2"
-  local backup="$BACKUP_DIR/$(basename "$dst").backup"
+  local backup
+  backup="$BACKUP_DIR/$(basename "$dst").backup"
 
   if [[ -L "$dst" ]]; then
     if [[ "$(readlink "$dst")" == "$src" ]]; then
