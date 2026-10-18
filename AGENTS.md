@@ -1,11 +1,7 @@
 # Agent Guidance
 
-When modifying this dotfiles tree:
+Follow [CONTRIBUTING.md](CONTRIBUTING.md). In addition:
 
-1. Treat `~/.config/dotfiles` as the only repository root.
-2. Never commit secrets, session tokens, kube client keys, or auth caches.
-3. Prefer template + local override pattern:
-   - tracked: `*.template`, reusable scripts, stable settings
-   - local-only: `*.local`, runtime state, machine-specific outputs
-4. Keep shell behavior stable on this host while making repo-safe changes.
-5. Update `README.md` when structure or bootstrap behavior changes.
+- `~/.config/dotfiles` is the only repository root.
+- Keep shell behaviour stable on the current host, and keep every change working on both macOS and Fedora.
+- Run `./scripts/check.sh` before committing.

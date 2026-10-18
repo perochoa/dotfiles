@@ -1,140 +1,66 @@
-# Dotfiles (local-first template)
+# Dotfiles
 
-> [!IMPORTANT]
-> **TL;DR:** `~/.config/dotfiles` is the repository root for reproducible personal configuration. Track reusable config and templates, keep machine-local secrets/state out of git, and use `./bootstrap.sh` to wire symlinks and local files safely.
-
-## Supported platforms
-
-- **macOS** (Apple Silicon or Intel) with Homebrew
-- **Fedora Linux** with native `dnf` packages plus [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux) for CLI tooling
-
-Shell, tmux, Neovim, starship, and helper scripts detect the platform at runtime, so the same files work on both.
-
-## Scope
-
-Track only declarative, reusable config:
-
-- shell, git, tmux, Homebrew, Neovim, starship, Ghostty
-- Copilot skills and non-secret Copilot settings
-- templates for AWS and Kubernetes
-
-Keep runtime state, machine caches, auth/session files, and private overrides local-only (ignored by `.gitignore`).
-
-## Structure
-
-- `shell/` — zsh modules plus `shell/zshrc` entrypoint (`env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional untracked `zshrc.local`)
-- `git/` — shared `config` (linked to `~/.config/git/config`) plus `gitconfig.local.template` for identity (copied to `gitconfig.local`, linked to `~/.gitconfig`)
-- `tmux/` — `tmux.conf`
-- `homebrew/` — Brewfile (casks and macOS-only formulae are guarded by `OS.mac?`)
-- `fedora/` — `packages.txt` of native Fedora packages installed with `dnf`
-- `ghostty/` — Ghostty terminal config
-- `nvim/` — shared Neovim (LazyVim) configuration, with `lazy-lock.json` pinning plugin versions
-- `bin/` — helper scripts (for example `awsme-sso.sh`, and `clip.sh` for a cross-platform clipboard)
-- `copilot/` — portable Copilot settings and skills
-- `aws/` — tracked template + local runtime config
-- `kube/` — tracked template + local EKS config
-- `scripts/` — package install, OS defaults (`macos-defaults.sh`, `linux-defaults.sh`), and `check.sh` validation
-- `.github/workflows/` — CI running `scripts/check.sh` on macOS and Fedora
+Personal configuration for macOS and Fedora Linux, kept at `~/.config/dotfiles`. Reusable config and templates are tracked; secrets, runtime state and machine-specific settings stay in untracked `*.local` files.
 
 ## Quick start
 
 ```bash
+git clone https://github.com/perochoa/dotfiles ~/.config/dotfiles
 cd ~/.config/dotfiles
-./bootstrap.sh
+./scripts/install-apps.sh   # packages (preview with --dry-run)
+./bootstrap.sh              # local files, symlinks, login shell (preview with --dry-run)
 ```
 
-This will:
+`bootstrap.sh` is safe to re-run. It:
 
-1. Symlink `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, and `~/.config/ghostty/config` to dotfiles-managed files.
-2. Symlink `~/.copilot/skills` to the tracked Copilot skills in `copilot/`.
-3. Symlink each script in `bin/` (without the `.sh` extension) into `~/.local/bin/` so they are on `$PATH`.
-4. Create `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from tracked templates if missing.
-5. Change your login shell to the system zsh if it isn't already (Fedora defaults to bash). It uses `chsh`, or `sudo usermod` if `chsh` isn't installed. Pass `--skip-shell` to opt out.
-6. Note: bootstrap creates local templates but does not automatically scan for secrets. Run a secrets scanner (for example `detect-secrets` or `git-secrets`) and perform a git-history scan before publishing a public repo.
+1. Creates `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from their templates if missing.
+2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, `~/.copilot/skills`, and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
+3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out.
 
-## Common workflows
+## Layout
 
-Install or reconcile packages from this repo:
+| Path | Contents |
+| --- | --- |
+| `shell/` | zsh config. `zshrc` loads `env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional `zshrc.local` |
+| `git/` | `config` (shared settings) and `gitconfig.local.template` (identity) |
+| `homebrew/Brewfile` | Packages for both OSes; casks and macOS-only formulae sit inside `if OS.mac?` |
+| `fedora/packages.txt` | Native Fedora packages installed with `dnf` |
+| `nvim/` | LazyVim config (see [`nvim/README.md`](nvim/README.md)) |
+| `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
+| `bin/` | `clip.sh` (cross-platform clipboard) and `awsme-sso.sh` (AWS SSO credentials; must be sourced) |
+| `aws/`, `kube/` | Config templates; the shell points `AWS_CONFIG_FILE` and `KUBECONFIG` at the local copies |
+| `copilot/skills/` | Copilot CLI skills |
+| `scripts/` | `install-apps.sh`, `macos-defaults.sh`, `linux-defaults.sh`, `check.sh` |
 
-```bash
-./scripts/install-apps.sh --dry-run
-./scripts/install-apps.sh
-```
+## Platforms
 
-On macOS this runs `brew bundle`. On Fedora it first installs `fedora/packages.txt` with `sudo dnf install`, then runs `brew bundle` (casks are skipped on Linux), then installs the Linux counterparts of the casks: Hack Nerd Font (into `~/.local/share/fonts`) and the Copilot CLI (`npm install -g @github/copilot`).
+Everything detects the OS at runtime, so the same files serve both machines.
 
-### Fedora setup
+- **macOS:** `install-apps.sh` runs `brew bundle`. `./scripts/macos-defaults.sh` applies Finder, Dock, screenshot and key-repeat settings.
+- **Fedora:**
+  1. Install [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux). `shell/env.zsh` finds it in `/home/linuxbrew/.linuxbrew`.
+  2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus casks), then Hack Nerd Font and the Copilot CLI.
+  3. Install Ghostty from a COPR (it isn't in the official repos; see <https://ghostty.org/docs/install/binary>), e.g. `sudo dnf copr enable scottames/ghostty && sudo dnf install ghostty`. Check that the COPR builds for your Fedora release first.
+  4. `./scripts/linux-defaults.sh` applies the GNOME equivalents of the macOS defaults (key repeat, folders first).
 
-1. Install Homebrew on Linux: see <https://brew.sh> (installs to `/home/linuxbrew/.linuxbrew`; `shell/env.zsh` finds it automatically).
-2. Run `./scripts/install-apps.sh`, then `./bootstrap.sh` (it switches your login shell to zsh; log out and back in afterwards).
-3. Install Ghostty. It isn't in the official Fedora repos; it's packaged in community COPR repos (see <https://ghostty.org/docs/install/binary>), for example:
+## Machine-specific settings
 
-   ```bash
-   sudo dnf copr enable scottames/ghostty
-   sudo dnf install ghostty
-   ```
+- **Shell:** `shell/zshrc.local`, loaded last.
+- **Git:** `git/gitconfig.local` (linked as `~/.gitconfig`) holds your identity and overrides `git/config`. `git config --global` writes there, never to the tracked file.
+- **AWS / Kubernetes:** `aws/config.local`, `kube/config.eks.local.yaml`, and optionally `~/.kube/config.local`.
 
-   Check that the COPR you pick builds for your Fedora release before enabling it.
+## Packages
 
-### OS defaults
+Add a package to the Brewfile only if most machines need it and it installs from a public tap. Leave out hardware-specific, MDM-managed, per-machine or experimental apps. Fedora-native system packages go in `fedora/packages.txt`.
 
-```bash
-./scripts/macos-defaults.sh --dry-run   # macOS: Finder, Dock, screenshots, key repeat
-./scripts/linux-defaults.sh --dry-run   # Fedora/GNOME: key repeat, folders first
-```
-
-Drop `--dry-run` to apply.
-
-### Neovim plugin versions
-
-`nvim/lazy-lock.json` is tracked so every machine runs the same plugin versions. After `:Lazy update`, commit the lockfile. After pulling on another machine, run `:Lazy restore`.
-
-### Validation
+## Checks
 
 ```bash
 ./scripts/check.sh
 ```
 
-Runs shellcheck (if installed), bash and zsh syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, idempotency, git config layering, and a clean interactive zsh startup. CI runs the same script on macOS and in a Fedora 44 container.
+Runs shellcheck (if installed) and bash/zsh syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, backups, idempotency, git config layering, and a clean zsh startup. CI runs it on macOS and in a Fedora 44 container.
 
-## Local files (ignored)
+## Secrets
 
-- `*.local` (including `git/gitconfig.local` and `shell/zshrc.local`)
-- `private/`
-- `aws/config.local`
-- `kube/config.eks.local.yaml`
-- `kube/config.local`
-- `copilot/config.json`
-- `copilot/session-store.db*`
-- `copilot/installed-plugins/`
-- `copilot/language-servers/`
-
-## Environment variables
-
-Set by `shell/env.zsh` when the files exist:
-
-- `AWS_CONFIG_FILE=~/.config/dotfiles/aws/config.local`
-- `KUBECONFIG=~/.config/dotfiles/kube/config.eks.local.yaml:$HOME/.kube/config.local`
-- `EDITOR`/`VISUAL=nvim`, `~/.local/bin` on `PATH`, and history settings (`~/.zsh_history`, 50k entries)
-
-## Machine-specific overrides
-
-- **Shell:** put per-machine zsh config in `shell/zshrc.local`; it's loaded last and ignored by git.
-- **Git:** shared settings go in `git/config`. Identity and per-machine settings go in `git/gitconfig.local` (`~/.gitconfig`), which overrides the shared file. `git config --global` writes there, so the tracked config is never edited by tools.
-
-## Homebrew policy
-
-See [`homebrew/Brewfile.lock.md`](homebrew/Brewfile.lock.md) for what is intentionally excluded from `Brewfile` to avoid machine-specific drift.
-
-## Safety notes
-
-- Do not commit local secrets, auth caches, or machine-generated state.
-- Bootstrap creates local templates but does not run an automatic secrets scanner. Before publishing, run a secrets scanner (for example `detect-secrets` or `git-secrets`) and review git history for any committed secrets or PII.
-
-## Public repository checklist (before publishing)
-
-- Ensure all `*.local` files are templates or removed from the repository (examples: `aws/config.local`, `kube/config.eks.local.yaml`).
-- Remove tracked local-only files from the index (git rm --cached <file>) and commit templates instead.
-- Run a history scan for secrets and PII (for example: `git log --all -S "AKIA\|ghp_\|AWS_SECRET_ACCESS_KEY"` and `detect-secrets scan --baseline .secrets.baseline`).
-- If secrets were ever committed, rotate credentials immediately and rewrite history (git-filter-repo or BFG) before publishing.
-- Consider adding an automated pre-push/CI secret check to block accidental leaks.
+Never commit secrets, tokens, keys or auth caches; keep them in `*.local` files or `private/`. Before publishing changes, scan with a tool such as `detect-secrets` or `git-secrets`. If a secret was ever committed, rotate it and rewrite history (`git filter-repo`).
