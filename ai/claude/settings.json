@@ -12,9 +12,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/commit-msg-check.py",
+            "command": "\"$HOME\"/.claude/hooks/git-guard.py",
             "timeout": 10,
-            "statusMessage": "checking commit message"
+            "statusMessage": "checking git rules"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/correction-check.py",
+            "timeout": 5
           }
         ]
       }

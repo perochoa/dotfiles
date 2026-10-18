@@ -39,7 +39,7 @@ TEST_HOME="$(mktemp -d)"
 trap 'rm -rf "$TEST_HOME"' EXIT
 mkdir -p "$TEST_HOME/.config"
 cp -R "$ROOT_DIR" "$TEST_HOME/.config/dotfiles"
-find "$TEST_HOME/.config/dotfiles" -name '*.local' -delete
+find "$TEST_HOME/.config/dotfiles" \( -name '*.local' -o -name '*.local.md' \) -delete
 
 # Pre-existing configs with the same basename must both survive as backups.
 mkdir -p "$TEST_HOME/.config/git" "$TEST_HOME/.config/ghostty"
@@ -68,16 +68,26 @@ for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.tom
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
 done
 
-log "claude commit-message hook"
+log "claude hooks"
 if command -v python3 >/dev/null 2>&1; then
-  hook="$TEST_HOME/.claude/hooks/commit-msg-check.py"
+  hook="$TEST_HOME/.claude/hooks/git-guard.py"
   repo="$TEST_HOME/hook-repo"
   git init -q -b main "$repo"
-  commit_json() { printf '{"tool_input":{"command":"git commit -m \\"%s\\""},"cwd":"%s"}' "$1" "$repo"; }
-  commit_json "add config" | "$hook" || fail "commit hook rejected a valid message"
-  if commit_json "Add config" | "$hook" 2>/dev/null; then fail "commit hook accepted an uppercase message"; fi
+  allows() { printf '{"tool_input":{"command":"%s"},"cwd":"%s"}' "$1" "$repo" | "$hook" 2>/dev/null; }
+  allows 'git commit -m \"add config\"' && fail "git-guard allowed a commit on main"
+  allows 'git switch -c feat/new-config' || fail "git-guard rejected a valid branch name"
+  allows 'git switch -c New_Config' && fail "git-guard allowed a badly named branch"
+  git -C "$repo" switch -q -c feat/new-config
+  allows 'git commit -m \"feat/new-config: add config\"' || fail "git-guard rejected a valid commit"
+  allows 'git commit -m \"feat/new-config: Add config\"' && fail "git-guard allowed an uppercase message"
+  allows 'git push origin feat/new-config:main' && fail "git-guard allowed a push to main"
+  [[ -f "$TEST_HOME/.config/dotfiles/ai/corrections.local.md" ]] || fail "corrections log not created from template"
+  printf '{"prompt":"never do that again"}' | "$TEST_HOME/.claude/hooks/correction-check.py" | grep -q correction-check ||
+    fail "correction-check hook ignored a correction"
+  [[ -z "$(printf '{"prompt":"list the files"}' | "$TEST_HOME/.claude/hooks/correction-check.py")" ]] ||
+    fail "correction-check hook fired on a normal prompt"
 else
-  log "python3 not installed; skipping commit hook test"
+  log "python3 not installed; skipping git-guard and correction-check tests"
 fi
 
 log "git config layers"
