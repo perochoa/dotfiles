@@ -30,4 +30,8 @@ export AWS_SECRET_ACCESS_KEY
 export AWS_EXPIRATION_TIME
 export AWS_ENV_NAME
 
-log_info "Your AWS creds for ${txtblu}${AWS_ENV_NAME}${txtrst}:${txtblu}${AWS_ACCOUNT_ID}${txtrst} are valid until ${txtylw}$(date -v +12H)${txtrst}"
+# BSD date (macOS) uses -v; GNU date (Linux) uses -d
+AWS_VALID_UNTIL=$(date -v +12H 2>/dev/null || date -d '+12 hours')
+
+log_info "Your AWS creds for ${txtblu}${AWS_ENV_NAME}${txtrst}:${txtblu}${AWS_ACCOUNT_ID}${txtrst} are valid until ${txtylw}${AWS_VALID_UNTIL}${txtrst}"
+unset AWS_VALID_UNTIL
