@@ -34,7 +34,7 @@ log_warn() {
 }
 
 log_error() {
-  printf "%b\n" "$(__date_prefix)${bldgrn} [ERROR] ${txtrst}${1}"
+  printf "%b\n" "$(__date_prefix)${bldred} [ERROR] ${txtrst}${1}"
 }
 
 function weather() {

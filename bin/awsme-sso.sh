@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Usage: source awsme-sso.sh <profile>   (the aliases in shell/aliases.zsh and `cs` do this)
+# Must be sourced so the exported credentials reach the calling shell; running it directly does nothing useful.
+if ! (return 0 2>/dev/null); then
+  echo "awsme-sso must be sourced: source ${0} <profile>" >&2
+  exit 1
+fi
+
+# log_info comes from shell/functions.zsh; fall back to plain output when sourced elsewhere.
+type log_info >/dev/null 2>&1 || log_info() { printf '%b\n' "$1"; }
+
 unset AWS_DEFAULT_PROFILE
 unset AWS_ACCOUNT_ID
 unset AWS_ACCESS_KEY_ID
