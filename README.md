@@ -14,7 +14,7 @@ Shell, tmux, Neovim, starship, and helper scripts detect the platform at runtime
 
 Track only declarative, reusable config:
 
-- shell, git, tmux, Homebrew, Neovim
+- shell, git, tmux, Homebrew, Neovim, starship, Ghostty
 - Copilot skills and non-secret Copilot settings
 - templates for AWS and Kubernetes
 
@@ -24,16 +24,17 @@ Keep runtime state, machine caches, auth/session files, and private overrides lo
 
 - `shell/` — zsh modules plus `shell/zshrc` entrypoint (`env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional untracked `zshrc.local`)
 - `git/` — shared `config` (linked to `~/.config/git/config`) plus `gitconfig.local.template` for identity (copied to `gitconfig.local`, linked to `~/.gitconfig`)
-- `tmux/` — canonical `tmux.conf`
+- `tmux/` — `tmux.conf`
 - `homebrew/` — Brewfile (casks and macOS-only formulae are guarded by `OS.mac?`)
 - `fedora/` — `packages.txt` of native Fedora packages installed with `dnf`
 - `ghostty/` — Ghostty terminal config
-- `nvim/` — shared Neovim configuration
+- `nvim/` — shared Neovim (LazyVim) configuration, with `lazy-lock.json` pinning plugin versions
 - `bin/` — helper scripts (for example `awsme-sso.sh`, and `clip.sh` for a cross-platform clipboard)
 - `copilot/` — portable Copilot settings and skills
 - `aws/` — tracked template + local runtime config
 - `kube/` — tracked template + local EKS config
-- `scripts/` — bootstrap and validation helpers
+- `scripts/` — package install, OS defaults (`macos-defaults.sh`, `linux-defaults.sh`), and `check.sh` validation
+- `.github/workflows/` — CI running `scripts/check.sh` on macOS and Fedora
 
 ## Quick start
 
@@ -44,13 +45,12 @@ cd ~/.config/dotfiles
 
 This will:
 
-1. Symlink `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, and `~/.config/nvim` to dotfiles-managed files.
+1. Symlink `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, and `~/.config/ghostty/config` to dotfiles-managed files.
 2. Symlink `~/.copilot/skills` to the tracked Copilot skills in `copilot/`.
 3. Symlink each script in `bin/` (without the `.sh` extension) into `~/.local/bin/` so they are on `$PATH`.
-4. On Linux, symlink `~/.config/ghostty/config` to `ghostty/config` (on macOS, see [`ghostty/README.md`](ghostty/README.md)).
-5. Create `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from tracked templates if missing.
-6. Change your login shell to the system zsh if it isn't already (Fedora defaults to bash). It uses `chsh`, or `sudo usermod` if `chsh` isn't installed. Pass `--skip-shell` to opt out.
-7. Note: bootstrap creates local templates but does not automatically scan for secrets. Run a secrets scanner (for example `detect-secrets` or `git-secrets`) and perform a git-history scan before publishing a public repo.
+4. Create `git/gitconfig.local`, `aws/config.local` and `kube/config.eks.local.yaml` from tracked templates if missing.
+5. Change your login shell to the system zsh if it isn't already (Fedora defaults to bash). It uses `chsh`, or `sudo usermod` if `chsh` isn't installed. Pass `--skip-shell` to opt out.
+6. Note: bootstrap creates local templates but does not automatically scan for secrets. Run a secrets scanner (for example `detect-secrets` or `git-secrets`) and perform a git-history scan before publishing a public repo.
 
 ## Common workflows
 
@@ -61,23 +61,41 @@ Install or reconcile packages from this repo:
 ./scripts/install-apps.sh
 ```
 
-On macOS this runs `brew bundle`. On Fedora it first installs `fedora/packages.txt` with `sudo dnf install`, then runs `brew bundle` (casks are skipped on Linux).
+On macOS this runs `brew bundle`. On Fedora it first installs `fedora/packages.txt` with `sudo dnf install`, then runs `brew bundle` (casks are skipped on Linux), then installs the Linux counterparts of the casks: Hack Nerd Font (into `~/.local/share/fonts`) and the Copilot CLI (`npm install -g @github/copilot`).
 
 ### Fedora setup
 
-1. Install Homebrew on Linux: see <https://brew.sh> (installs to `/home/linuxbrew/.linuxbrew`; `shell/terminal.zsh` finds it automatically).
+1. Install Homebrew on Linux: see <https://brew.sh> (installs to `/home/linuxbrew/.linuxbrew`; `shell/env.zsh` finds it automatically).
 2. Run `./scripts/install-apps.sh`, then `./bootstrap.sh` (it switches your login shell to zsh; log out and back in afterwards).
-3. Install the parts the Brewfile only provides as macOS casks:
-   - **Ghostty**: see <https://ghostty.org/docs/install/binary> for the current Fedora package.
-   - **Hack Nerd Font**: download it from <https://www.nerdfonts.com/font-downloads>, unzip it into `~/.local/share/fonts`, then run `fc-cache -f`.
-   - **Copilot CLI**: `npm install -g @github/copilot`.
+3. Install Ghostty. It isn't in the official Fedora repos; it's packaged in community COPR repos (see <https://ghostty.org/docs/install/binary>), for example:
 
-Apply your macOS defaults baseline (macOS only):
+   ```bash
+   sudo dnf copr enable scottames/ghostty
+   sudo dnf install ghostty
+   ```
+
+   Check that the COPR you pick builds for your Fedora release before enabling it.
+
+### OS defaults
 
 ```bash
-./scripts/macos-defaults.sh --dry-run
-./scripts/macos-defaults.sh
+./scripts/macos-defaults.sh --dry-run   # macOS: Finder, Dock, screenshots, key repeat
+./scripts/linux-defaults.sh --dry-run   # Fedora/GNOME: key repeat, folders first
 ```
+
+Drop `--dry-run` to apply.
+
+### Neovim plugin versions
+
+`nvim/lazy-lock.json` is tracked so every machine runs the same plugin versions. After `:Lazy update`, commit the lockfile. After pulling on another machine, run `:Lazy restore`.
+
+### Validation
+
+```bash
+./scripts/check.sh
+```
+
+Runs shellcheck (if installed), bash and zsh syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, idempotency, git config layering, and a clean interactive zsh startup. CI runs the same script on macOS and in a Fedora 44 container.
 
 ## Local files (ignored)
 
