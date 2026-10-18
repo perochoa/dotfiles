@@ -37,6 +37,7 @@ brew "zsh-autocomplete"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 brew "gh"
+cask "claude-code"
 
 # macOS-only: casks are unsupported on Linux, and Fedora ships podman natively.
 # On Fedora these come from fedora/packages.txt (see README).
