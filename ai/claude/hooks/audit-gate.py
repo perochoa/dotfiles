@@ -105,8 +105,15 @@ def has_sections(report: str) -> bool:
     return all(re.search(rf"^#+ .*{re.escape(s)}", report, re.MULTILINE) for s in SECTIONS)
 
 
+def handback(block: dict) -> str:
+    """The report a subagent passed to SubagentHandback, which is then its final output."""
+    if block.get("type") == "tool_use" and block.get("name") == "SubagentHandback":
+        return str((block.get("input") or {}).get("message") or "")
+    return ""
+
+
 def last_text(transcript: str) -> str:
-    """Last assistant text in a transcript (fallback when the payload has no last message)."""
+    """Last assistant text or hand-back report in a transcript."""
     text = ""
     path = Path(transcript)
     if not path.is_file():
@@ -119,14 +126,19 @@ def last_text(transcript: str) -> str:
         if entry.get("type") != "assistant":
             continue
         content = entry.get("message", {}).get("content", [])
-        parts = [c.get("text", "") for c in content if isinstance(c, dict) and c.get("type") == "text"]
+        blocks = [c for c in content if isinstance(c, dict)]
+        parts = [c.get("text", "") if c.get("type") == "text" else handback(c) for c in blocks]
         if any(parts):
-            text = "\n".join(parts)
+            text = "\n".join(p for p in parts if p)
     return text
 
 
 def record(payload: dict) -> None:
-    report = (payload.get("last_assistant_message") or last_text(payload.get("transcript_path") or "")).strip()
+    report = (payload.get("last_assistant_message") or "").strip()
+    if not has_sections(report):  # e.g. the report went out through SubagentHandback
+        # On SubagentStop, transcript_path is the parent's; the auditor's own is agent_transcript_path.
+        transcript = payload.get("agent_transcript_path") or payload.get("transcript_path") or ""
+        report = last_text(transcript).strip()
     repo = toplevel(Path(payload.get("cwd") or "."))
     if not repo or not has_sections(report):
         return

@@ -178,6 +178,13 @@ if command -v python3 >/dev/null 2>&1; then
   [[ -z "$(stop architecture-implementer)" && -z "$(ls -A "$audits/leases")" ]] ||
     fail "audit-gate did not release the lease on a clean stop"
   edit src/a.py | grep -q '"deny"' || fail "audit-gate kept allowing edits after the lease was released"
+  # A report sent through SubagentHandback is only in the auditor's own transcript.
+  handback="$TEST_HOME/auditor.jsonl"
+  python3 -c 'import json, sys; print(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "SubagentHandback", "input": {"message": sys.argv[1]}}]}}))' \
+    "${report/none/handed back}" >"$handback"
+  json hook_event_name SubagentStop agent_type architecture-auditor cwd "$arepo" last_assistant_message "" \
+    transcript_path "$TEST_HOME/parent.jsonl" agent_transcript_path "$handback" | gate_run
+  [[ "$(find "$audits" -name '*.md' | wc -l)" -eq 2 ]] || fail "audit-gate did not record a handed-back report"
 else
   log "python3 not installed; skipping claude hook tests"
 fi
