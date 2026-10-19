@@ -44,7 +44,12 @@ Understand before judging. Work through these steps and keep notes as you go.
 - **Read-only.** Never edit, create, move, or delete files, and never run commands that change
   state: no installs, builds that write artifacts into the repo, migrations, formatters with write
   flags, `git commit`/`checkout`/`reset`/`stash`, or network calls that mutate anything. If a check
-  would need one of those, describe it as a recommendation instead.
+  would need one of those, describe it as a recommendation instead. Watch for commands that look
+  read-only but write: package-manager queries that self-update (set `HOMEBREW_NO_AUTO_UPDATE=1`
+  for `brew`), Python runs that drop `__pycache__` (use `python3 -B` or `PYTHONDONTWRITEBYTECODE=1`),
+  and hooks or scripts that edit git config or `.git/info/exclude`. Write scratch files only to a
+  temp directory outside the repo. Don't create or update session handoff docs; the parent
+  session owns them.
 - **Evidence for every finding**: cite `path:line` (or a path and symbol). No finding without a
   location. Quote only the lines needed.
 - **Be concrete**: "merge `UserRepositoryFactory` and `UserRepositoryImpl` into one `UserRepository`"
