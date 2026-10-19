@@ -59,7 +59,7 @@ Skills are linked one by one into `~/.claude/skills` because Claude Code also in
 
 ## Machine-specific settings
 
-- **Shell:** `shell/zshrc.local` (from `zshrc.local.template`), loaded last. Define this machine's AWS profile aliases here; each one sources `awsme-sso` for the profile of the same name in `aws/config.local`.
+- **Shell:** `shell/zshrc.local` (from `zshrc.local.template`), loaded last. Define this machine's AWS profile aliases here (each one sources `awsme-sso` for the profile of the same name in `aws/config.local`), plus employer- or machine-specific helpers such as the commented-out `cs` context switcher.
 - **Git:** `git/gitconfig.local` (linked as `~/.gitconfig`) holds your identity and overrides `git/config`. `git config --global` writes there, never to the tracked file.
 - **AWS / Kubernetes:** `aws/config.local`, `kube/config.eks.local.yaml`, and optionally `~/.kube/config.local`.
 

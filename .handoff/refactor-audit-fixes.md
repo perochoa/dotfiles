@@ -10,7 +10,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 4 dead code / redundant overrides
 - [x] 5 brewfile claude-code cask
 - [x] 6 ci push only on main
-- [ ] 7 move cs() to zshrc.local
+- [x] 7 move cs() to zshrc.local
 - [ ] 8 one source of commit rules
 - [ ] 9 lint python in check.sh
 - [ ] 10 awsme-sso single sts call
@@ -26,6 +26,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 
 - colorscheme: lazyvim's default colorscheme already loads tokyonight (headless nvim reports tokyonight-night).
 - claude-code cask: upstream cask declares `os macos: "darwin", linux: "linux"` with linux sha256s, so it stays outside `if OS.mac?`; fixed the brewfile comment and readme instead. `brew info --json` only shows the current platform, so read the cask .rb on github.
+- cs(): copied verbatim into this mac's untracked shell/zshrc.local, removed from functions.zsh; template has a commented dev/staging/prod example. log_warn/log_error kept: the local cs and the template example use them.
 
 ## Gotchas
 - shellcheck is not installed on this mac, so check.sh skips lint locally; ci runs it.
@@ -36,4 +37,4 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - ai/claude/hooks/git-guard.py, scripts/check.sh
 
 ## Open questions
-- none yet
+- internal context/profile names from the old cs() remain in git history (not rewritten). ai/skills/k8s-access/SKILL.md still documents the employer-specific cs mappings in tracked files.

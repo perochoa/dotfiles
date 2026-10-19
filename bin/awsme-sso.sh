@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: source awsme-sso.sh <profile>   (the aliases in shell/zshrc.local and `cs` do this)
+# Usage: source awsme-sso.sh <profile>   (aliases or helpers like `cs` in shell/zshrc.local do this)
 # Logs in if needed and points the calling shell at the profile. SSO profiles (aws sso login) also export their
 # temporary credentials; login_session profiles (aws login) don't, because the CLI rotates those every 15 minutes.
 
