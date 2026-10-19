@@ -8,7 +8,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 2 check.sh fixture (git clean -fdX)
 - [x] 3 treesitter redundancy
 - [x] 4 dead code / redundant overrides
-- [ ] 5 brewfile claude-code cask
+- [x] 5 brewfile claude-code cask
 - [ ] 6 ci push only on main
 - [ ] 7 move cs() to zshrc.local
 - [ ] 8 one source of commit rules
@@ -25,9 +25,11 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - treesitter: only `jsonc` is not installed by LazyVim base + enabled extras (checked against lazy/LazyVim treesitter.lua and extras/lang/*.lua).
 
 - colorscheme: lazyvim's default colorscheme already loads tokyonight (headless nvim reports tokyonight-night).
+- claude-code cask: upstream cask declares `os macos: "darwin", linux: "linux"` with linux sha256s, so it stays outside `if OS.mac?`; fixed the brewfile comment and readme instead. `brew info --json` only shows the current platform, so read the cask .rb on github.
 
 ## Gotchas
 - shellcheck is not installed on this mac, so check.sh skips lint locally; ci runs it.
+- `brew bundle list` triggers homebrew auto-update; set HOMEBREW_NO_AUTO_UPDATE=1 to avoid it.
 - exit 1 from a claude code hook is non-blocking, so an import crash silently disables the guard.
 
 ## Key files

@@ -23,7 +23,7 @@ cd ~/.config/dotfiles
 | --- | --- |
 | `shell/` | zsh config. `zshrc` sets `$DOTFILES` and loads `env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional `zshrc.local` |
 | `git/` | `config` (shared settings) and `gitconfig.local.template` (identity) |
-| `homebrew/Brewfile` | Packages for both OSes; casks and macOS-only formulae sit inside `if OS.mac?` |
+| `homebrew/Brewfile` | Packages for both OSes; macOS-only casks and formulae sit inside `if OS.mac?` (`claude-code` is a cross-platform cask) |
 | `fedora/packages.txt` | Native Fedora packages installed with `dnf` |
 | `nvim/` | LazyVim config (see [`nvim/README.md`](nvim/README.md)) |
 | `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
@@ -39,7 +39,7 @@ Everything detects the OS at runtime, so the same files serve both machines.
 - **macOS:** `install-apps.sh` runs `brew bundle`. `./scripts/macos-defaults.sh` applies Finder, Dock, screenshot and key-repeat settings.
 - **Fedora:**
   1. Install [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux). `shell/env.zsh` finds it in `/home/linuxbrew/.linuxbrew`.
-  2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus casks), then Hack Nerd Font and the Copilot CLI.
+  2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus the macOS-only block; the `claude-code` cask has Linux builds), then Hack Nerd Font and the Copilot CLI.
   3. Install Ghostty from a COPR (it isn't in the official repos; see <https://ghostty.org/docs/install/binary>), e.g. `sudo dnf copr enable scottames/ghostty && sudo dnf install ghostty`. Check that the COPR builds for your Fedora release first.
   4. `./scripts/linux-defaults.sh` applies the GNOME equivalents of the macOS defaults (key repeat, folders first).
 
