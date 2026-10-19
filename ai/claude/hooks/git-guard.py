@@ -11,6 +11,8 @@ Exit 2 blocks the command and shows the reasons to the assistant. Anything this 
 parse is allowed through rather than blocked.
 """
 
+from __future__ import annotations
+
 import json
 import re
 import shlex
