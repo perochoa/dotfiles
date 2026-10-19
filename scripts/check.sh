@@ -88,7 +88,7 @@ fi
 log "symlinks"
 for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.toml .config/nvim \
   .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/hooks .claude/skills/gitlab-cli \
-  .claude/agents/architecture-auditor.md \
+  .claude/agents/architecture-auditor.md .claude/agents/architecture-implementer.md \
   .copilot/copilot-instructions.md .agents/skills \
   .local/bin/clip .local/bin/awsme-sso; do
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
@@ -143,6 +143,41 @@ if command -v python3 >/dev/null 2>&1; then
   starts "$shared" | grep -q "Mode: committed" || fail "session-handoff missed a tracked AGENTS.md"
   ! grep -qx "/.handoff/" "$shared/.git/info/exclude" || fail "session-handoff excluded a committed .handoff/"
   [[ -z "$(starts "$TEST_HOME")" ]] || fail "session-handoff printed outside a git repo"
+  # audit-gate: the implementer only applies reports recorded from the auditor, within their files.
+  gate="$TEST_HOME/.claude/hooks/audit-gate.py"
+  audits="$TEST_HOME/.claude/audits"
+  arepo="$TEST_HOME/audit-repo"
+  git init -q -b main "$arepo" && mkdir -p "$arepo/src" && touch "$arepo/src/a.py" "$arepo/src/b.py"
+  git -C "$arepo" add . && git -C "$arepo" -c user.name=check -c user.email=check@example.invalid commit -qm init
+  gate_run() { HOME="$TEST_HOME" "$gate"; }
+  json() { python3 -c 'import json, sys; a = sys.argv[1:]; print(json.dumps(dict(zip(a[::2], a[1::2]))))' "$@"; }
+  pre() { # tool, input json, [agent]
+    printf '{"hook_event_name":"PreToolUse","tool_name":"%s","tool_input":%s,"agent_type":"%s","cwd":"%s"}' "$1" "$2" "${3:-}" "$arepo" | gate_run
+  }
+  stop() { printf '{"hook_event_name":"SubagentStop","agent_type":"%s","cwd":"%s"}' "$1" "$arepo" | gate_run; }
+  launch() { pre Agent "$(json subagent_type architecture-implementer prompt "$1")"; }
+  edit() { pre Write "$(json file_path "$1")" architecture-implementer; }
+  report=$'## 1. Executive Summary\nx\n## 2. Best Practices Audit\n| a | `src/a.py:3` |\n## 3. Refactoring & Simplification Roadmap\n1. delete `src/old/`\n## 4. Concrete Before-and-After Code Examples\nnone'
+  json hook_event_name SubagentStop agent_type architecture-auditor cwd "$arepo" last_assistant_message "$report" | gate_run
+  json hook_event_name SubagentStop agent_type Explore cwd "$arepo" last_assistant_message "${report/1\. /}x" | gate_run
+  [[ "$(find "$audits" -name '*.md' | wc -l)" -eq 1 ]] || fail "audit-gate did not record exactly the auditor's report"
+  launch "fix everything" | grep -q '"deny"' || fail "audit-gate launched the implementer without an audit"
+  launch $'audit: 000000000000\nsteps: all' | grep -q '"deny"' || fail "audit-gate accepted an unrecorded audit"
+  edit src/a.py | grep -q '"deny"' || fail "audit-gate let the implementer edit without a lease"
+  launch $'audit: latest\nsteps: 1\nalso fix the readme' | grep -q '"deny"' || fail "audit-gate accepted extra instructions"
+  launch $'audit: latest\nsteps: 1, 2-3' | grep -q 'Best Practices Audit' || fail "audit-gate did not hand the report to the implementer"
+  [[ -z "$(edit src/a.py)" && -z "$(edit src/old/x.py)" ]] || fail "audit-gate blocked a cited file"
+  edit src/b.py | grep -q '"deny"' || fail "audit-gate allowed an uncited file"
+  [[ -z "$(pre Write "$(json file_path src/b.py)")" ]] || fail "audit-gate restricted another agent"
+  pre Write "$(json file_path "$audits/forged.md")" | grep -q '"deny"' || fail "audit-gate allowed writing the registry"
+  pre Bash "$(json command "echo x >$audits/forged.md")" | grep -q '"deny"' || fail "audit-gate allowed a shell write to the registry"
+  [[ -z "$(pre Bash "$(json command "ls $audits")")" ]] || fail "audit-gate blocked reading the registry"
+  echo changed >"$arepo/src/a.py" && echo changed >"$arepo/src/b.py"
+  stop architecture-implementer | grep -q '"block"' || fail "audit-gate let the implementer stop with uncited changes"
+  git -C "$arepo" checkout -q src/b.py
+  [[ -z "$(stop architecture-implementer)" && -z "$(ls -A "$audits/leases")" ]] ||
+    fail "audit-gate did not release the lease on a clean stop"
+  edit src/a.py | grep -q '"deny"' || fail "audit-gate kept allowing edits after the lease was released"
 else
   log "python3 not installed; skipping claude hook tests"
 fi

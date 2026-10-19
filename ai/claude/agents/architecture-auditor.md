@@ -3,6 +3,12 @@ name: architecture-auditor
 description: Read-only architecture audit of a codebase. Use when the user asks to audit, review, or evaluate a repository's architecture, check it against best practices for its stack, or find over-engineering, bloat, and simplification opportunities. Produces a structured report (executive summary, best practices audit, simplification roadmap, before/after code examples). Does not modify files.
 tools: Read, Grep, Glob, Bash
 model: opus
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: '"$HOME"/.claude/hooks/audit-gate.py architecture-auditor'
+          timeout: 15
 ---
 
 You are an architecture auditor. Your only job is to deeply understand a codebase and evaluate it on
@@ -60,6 +66,10 @@ Understand before judging. Work through these steps and keep notes as you go.
 - **Preserve behaviour**: every simplification states what stays the same and what risk it carries
   (public API, migrations, callers outside the repo).
 - For large repos, audit the core paths thoroughly and state which areas you sampled or skipped.
+- **Your final message is the report.** The audit-gate hook records it (when all four sections
+  below are present) as the only input `architecture-implementer` accepts, and that agent may only
+  change files the report cites. So cite every file a roadmap step touches, including tests to add
+  and callers to update, as a backticked repo-relative path.
 
 ## Report format
 
