@@ -23,7 +23,6 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - git-guard: `from __future__ import annotations` instead of `Optional[...]`; keeps modern syntax and works on macOS /usr/bin/python3 (3.9.6).
 - check.sh: `git clean -fdXq` on the repo copy (guarded by a rev-parse --show-toplevel check so it can never touch the real worktree); asserts local files are created from templates.
 - treesitter: only `jsonc` is not installed by LazyVim base + enabled extras (checked against lazy/LazyVim treesitter.lua and extras/lang/*.lua).
-
 - colorscheme: lazyvim's default colorscheme already loads tokyonight (headless nvim reports tokyonight-night).
 - claude-code cask: upstream cask declares `os macos: "darwin", linux: "linux"` with linux sha256s, so it stays outside `if OS.mac?`; fixed the brewfile comment and readme instead. `brew info --json` only shows the current platform, so read the cask .rb on github.
 - cs(): copied verbatim into this mac's untracked shell/zshrc.local, removed from functions.zsh; template has a commented dev/staging/prod example. log_warn/log_error kept: the local cs and the template example use them.
@@ -47,5 +46,6 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 ## Open questions
 - internal context/profile names from the old cs() remain in git history (not rewritten). ai/skills/k8s-access/SKILL.md still documents the employer-specific cs mappings in tracked files.
 - manual checks: aws sso + login_session profiles (valid and expired); claude-code cask on fedora via linuxbrew; nvim parser set (`:TSInstallInfo`/`:checkhealth nvim-treesitter`).
+- skills to prune (user's call, not done): python-testing, python-patterns, golang-testing, golang-patterns, rust-testing, react-performance, backend-patterns, tdd-workflow.
 - correction-check.py regex left unchanged (out of scope).
 - push / open pr: user decides.
