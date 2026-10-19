@@ -9,7 +9,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 3 treesitter redundancy
 - [x] 4 dead code / redundant overrides
 - [x] 5 brewfile claude-code cask
-- [ ] 6 ci push only on main
+- [x] 6 ci push only on main
 - [ ] 7 move cs() to zshrc.local
 - [ ] 8 one source of commit rules
 - [ ] 9 lint python in check.sh
