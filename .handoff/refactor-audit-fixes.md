@@ -13,7 +13,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 7 move cs() to zshrc.local
 - [x] 8 one source of commit rules
 - [x] 9 lint python in check.sh
-- [ ] 10 awsme-sso single sts call
+- [x] 10 awsme-sso single sts call
 - [ ] 11 merge gitlab review helper
 - [ ] 12 skills pruning (report only)
 - [ ] 13 bootstrap migration leftovers
@@ -28,6 +28,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - claude-code cask: upstream cask declares `os macos: "darwin", linux: "linux"` with linux sha256s, so it stays outside `if OS.mac?`; fixed the brewfile comment and readme instead. `brew info --json` only shows the current platform, so read the cask .rb on github.
 - cs(): copied verbatim into this mac's untracked shell/zshrc.local, removed from functions.zsh; template has a commented dev/staging/prod example. log_warn/log_error kept: the local cs and the template example use them.
 - python lint: ast.parse (writes no bytecode) + `ruff check --isolated --select E4,E7,E9,F`; ruff 0.17's defaults flag style rules, so the rule set is pinned. 3.9 regression test runs git-guard via /usr/bin/python3 on macOS (verified it fails without the __future__ import).
+- awsme-sso: first `sts get-caller-identity --query Account` doubles as the session check; login + re-query only on failure. Tested with a stub `aws` in bash and zsh (both profile types, valid/expired/failed login). NOT tested against real aws: user must try one sso profile and one login_session profile, each with a valid and an expired session. shellcheck not run locally (not installed); ci runs it.
 
 ## Gotchas
 - shellcheck is not installed on this mac, so check.sh skips lint locally; ci runs it.
