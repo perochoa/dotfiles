@@ -8,3 +8,14 @@
 #   alias "$_profile=source \${DOTFILES}/bin/awsme-sso.sh $_profile"
 # done
 # unset _profile
+
+# Context switch: kubectl context + AWS profile + matching terraform directory in the current repo.
+# Contexts and AWS profiles share names here; map them separately if yours differ.
+# cs() {
+#   local -A paths=([dev]="us-east-1/development" [staging]="us-east-1/staging" [prod]="us-east-1/production")
+#   [[ -n "${paths[$1]}" ]] || { log_error "Unknown context '$1'"; return 1; }
+#   local dir="$(git rev-parse --show-toplevel 2>/dev/null)/${paths[$1]}"
+#   if [[ -d "$dir" ]]; then cd "$dir"; else log_warn "$dir does not exist"; fi
+#   kubectx "$1" || return 1
+#   source "${DOTFILES}/bin/awsme-sso.sh" "$1"
+# }

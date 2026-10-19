@@ -10,9 +10,12 @@
 
 ## Commit conventions
 
-- Use concise, imperative commit subjects.
-- Prefer one logical change per commit.
-- Mention affected surfaces (for example `shell`, `nvim`, `aws`, `kube`, `ai`) in the body when helpful.
+Branches, commit messages and pull requests follow the Git sections of [`ai/AGENTS.md`](ai/AGENTS.md):
+`<type>/<description>` branches, one logical change per commit, all-lowercase messages prefixed with
+`<branch>: `, and changes reach `main` only through a pull request (`git-guard.py` enforces most of it).
+
+In this repo, also mention the affected surfaces (for example `shell`, `nvim`, `aws`, `kube`, `ai`) in
+the body when helpful.
 
 ## Validation before commit
 

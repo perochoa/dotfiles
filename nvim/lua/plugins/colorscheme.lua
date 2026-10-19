@@ -9,10 +9,4 @@ return {
       terminal_colors = true,
     },
   },
-  {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "tokyonight",
-    },
-  },
 }

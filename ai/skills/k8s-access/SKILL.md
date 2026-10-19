@@ -1,136 +1,69 @@
 ---
 name: k8s-access
-description: Know how to access AWS Ecs Kubernetes clusters across dev/staging/prod environments and us-east-1/us-east-2 regions. Use when running kubectl commands, switching contexts, or debugging workloads on the mlops or microservices clusters.
+description: Access AWS EKS Kubernetes clusters with this dotfiles setup (awsme-sso, kubeconfig from kube/config.eks.local.yaml, kl/kx aliases, optional cs helper). Use when running kubectl commands, switching kube contexts or AWS profiles, or debugging cluster workloads.
 ---
 
-# K8s Cluster Access
+# Kubernetes (EKS) access
 
-## Shell Aliases (Always Use These)
+Clusters, contexts and AWS profiles are machine-specific and live in untracked files, so
+**discover them; never guess**. Nothing here is hardcoded on purpose.
 
-- `kl` = `kubectl`
-- `kx` = `kubectx`
-- `kxu` = `kubectx ${AWS_ENV_NAME}-${AWS_REGION}` (auto-switch to context matching current AWS env)
-- `cs <env>` = **combo command**: switches kubectl context + AWS credentials + `cd`s to matching terraform dir + runs `init.sh` if present
+## Where the configuration lives
 
-## AWS Credential Aliases
+| What | Source |
+| --- | --- |
+| AWS profiles (SSO or `aws login`) | `$AWS_CONFIG_FILE` → `~/.config/dotfiles/aws/config.local` |
+| Kube contexts | `$KUBECONFIG` → `kube/config.eks.local.yaml` and `~/.kube/config.local` (whichever exist) |
+| Per-profile sign-in aliases, `cs` helper | `~/.config/dotfiles/shell/zshrc.local` (may define neither) |
+| Shared aliases | `kl` = `kubectl`, `kx` = `kubectx` (`shell/aliases.zsh`) |
 
-Run these first to authenticate before any kubectl commands.
-Each alias sources `awsme-sso.sh` which sets AWS_ENV_NAME, AWS_REGION, credentials, and triggers SSO login if needed.
-
-| Alias  | AWS Profile | Account ID   | Env     | Region    |
-| ------ | ----------- | ------------ | ------- | --------- |
-| `aid1` | `aid1`      | 418295676836 | dev     | us-east-1 |
-| `aid2` | `aid2`      | 418295676836 | dev     | us-east-2 |
-| `ais1` | `ais1`      | 051826741793 | staging | us-east-1 |
-| `ais2` | `ais2`      | 051826741793 | staging | us-east-2 |
-| `aip1` | `aip1`      | 084828600553 | prod    | us-east-1 |
-| `aip2` | `aip2`      | 084828600553 | prod    | us-east-2 |
-
-> Legacy/other-team aliases: `dtd` (dev), `dts` (staging), `dtp` (prod) — old DT account, avoid for mlops.
-
-## Kubernetes Contexts
-
-### MLOps Cluster (`cfx-ai-mlops`)
-
-| Context                 | Env     | Region    | AWS Profile |
-| ----------------------- | ------- | --------- | ----------- |
-| `aid1`                  | dev     | us-east-1 | `aid1`      |
-| _(no aid2 context yet)_ | dev     | us-east-2 | `aid2`      |
-| `ais1`                  | staging | us-east-1 | `ais1`      |
-| `ais2`                  | staging | us-east-2 | `ais2`      |
-| `aip1`                  | prod    | us-east-1 | `aip1`      |
-| `aip2`                  | prod    | us-east-2 | `aip2`      |
-
-### Microservices Cluster (`cfx-ai-mlops-microservices`)
-
-| Context | Env     | Region    | AWS Profile |
-| ------- | ------- | --------- | ----------- |
-| `mss1`  | staging | us-east-1 | `ais1`      |
-| `mss2`  | staging | us-east-2 | `ais2`      |
-| `msp1`  | prod    | us-east-1 | `aip1`      |
-| `msp2`  | prod    | us-east-2 | `aip2`      |
-
-> No dev microservices cluster. `docker-desktop` = local only.
-
-### Setup New Cluster Context
+## Discover before acting
 
 ```bash
-# After authenticating, run:
-mlops_setup_cluster
-# This runs: aws ecs update-kubeconfig --alias "${AWS_ENV_NAME}-${AWS_REGION}" --name "${MLOPS_CLUSTER}" --region "${AWS_REGION}"
+aws configure list-profiles                 # available AWS profiles
+kubectl config get-contexts                 # contexts; the current one is starred
+kubectl config view --minify -o jsonpath='{.users[0].user.exec.env}'   # AWS_PROFILE a context's token uses, if pinned
+zsh -ic 'whence -f cs' 2>/dev/null          # the cs mapping, if this machine defines one
+echo "$AWS_PROFILE"                         # profile active in this shell
 ```
 
-## Other Useful Aliases
+## Signing in
 
-- `mlops_ecr_docker_login` — authenticate Docker to ECR
-- `mlops_ecr_podman_login` — authenticate Podman to ECR
-- `aws-copy-creds` — copy current AWS env vars to clipboard
-
-## `cs` — Switch Everything at Once (Preferred)
-
-`cs <context>` does all of the following in one command:
-
-1. Switches kubectl context
-2. Switches AWS credentials (via `awsme-sso.sh`)
-3. `cd`s to the matching terraform directory (e.g., `us-east-1/staging`) relative to the git root
-4. Runs `./init.sh` if present in the target directory
-
-**Valid `cs` arguments and their mappings:**
-
-| `cs` arg | Kube Context | AWS Profile | Directory               |
-| -------- | ------------ | ----------- | ----------------------- |
-| `aid1`   | `aid1`       | `aid1`      | `us-east-1/development` |
-| `aid2`   | `aid2`       | `aid2`      | `us-east-2/development` |
-| `ais1`   | `ais1`       | `ais1`      | `us-east-1/staging`     |
-| `ais2`   | `ais2`       | `ais2`      | `us-east-2/staging`     |
-| `aip1`   | `aip1`       | `aip1`      | `us-east-1/production`  |
-| `aip2`   | `aip2`       | `aip2`      | `us-east-2/production`  |
-| `mss1`   | `mss1`       | `ais1`      | `us-east-1/staging`     |
-| `mss2`   | `mss2`       | `ais2`      | `us-east-2/staging`     |
-| `msp1`   | `msp1`       | `aip1`      | `us-east-1/production`  |
-| `msp2`   | `msp2`       | `aip2`      | `us-east-2/production`  |
-| `dtd`    | `dtd`        | `dtd`       | `us-east-1/development` |
-| `dts`    | `dts`        | `dts`       | `us-east-1/staging`     |
-| `dtp`    | `dtp`        | `dtp`       | `us-east-1/production`  |
-
-> Note: Microservices contexts (`mss*`/`msp*`) reuse the same AWS profile as the mlops contexts (`ais*`/`aip*`).
-
-## Standard Workflow
+`awsme-sso` must be **sourced** so it can export into the shell:
 
 ```bash
-# Option 1: Use cs (preferred — does everything)
-cs aip1
-
-# Option 2: Manual steps
-aip1          # authenticate AWS
-kx aip1       # switch kube context
-
-# Then run commands
-kl get pods -n <namespace>
-kl get deployments -n <namespace>
-kl logs <pod> -n <namespace>
+source ~/.local/bin/awsme-sso <profile>     # or the profile alias from zshrc.local
 ```
 
-## Decision Logic
+It runs `aws sso login` or `aws login` only when the session is invalid, sets `AWS_PROFILE`,
+`AWS_ENV_NAME` and `AWS_ACCOUNT_ID`, and for SSO profiles exports temporary credentials.
+Each tool call runs in a fresh shell, so sign in and run kubectl in the **same command**:
 
-When asked to run a kubectl command:
+```bash
+source ~/.local/bin/awsme-sso <profile> && kubectl --context <context> get pods -n <namespace>
+```
 
-1. **Infer environment** from CWD path (`prod`/`staging`/`dev`) or ask the user.
-2. **Infer region** from CWD path (`us-east-1`/`us-east-2`) or ask the user.
-3. **Ask cluster type** if not obvious: mlops or microservices?
-4. Look up the correct cred alias + context from the tables above.
-5. Run: cred alias → `kx <context>` → `kl <command> -n <namespace>`
+If `zshrc.local` defines `cs <context>`, it switches context, signs in, and `cd`s to the matching
+terraform directory of the current repo in one step; check its mapping with `whence -f cs` first.
 
-## CWD Inference Rules
+## Adding a cluster context
 
-- Path contains `prod`/`production` → env = prod
-- Path contains `stag`/`staging` → env = staging
-- Path contains `dev`/`development` → env = dev
-- Path contains `us-east-1` → region = us-east-1
-- Path contains `us-east-2` → region = us-east-2
+```bash
+aws eks update-kubeconfig --name <cluster> --region <region> --alias <context> \
+  --kubeconfig ~/.config/dotfiles/kube/config.eks.local.yaml
+```
 
-## Hard Rules
+This writes a local, untracked file. Ask before running it.
 
-- Always use `kl` not `kubectl`
-- Always use `kx` not `kubectx`
-- **Never assume a namespace** — always ask or derive from context
+## Rules
+
+- Pass `--context <name>` explicitly instead of relying on the current context, and say which
+  context and namespace a command targets.
+- Never assume a namespace; derive it from the task or ask.
+- Infer environment and region from the working directory (`production`/`staging`/`development`,
+  `us-east-1`/`us-east-2`) only to pick a candidate, then confirm it against the discovered
+  contexts. Ask when more than one fits.
+- Read-only commands (`get`, `describe`, `logs`, `top`) are fine after confirming the target.
+  Ask before anything that mutates a cluster (`apply`, `delete`, `scale`, `rollout restart`,
+  `exec`, `port-forward`), and treat production as needing explicit confirmation every time.
+- If sign-in needs a browser (SSO device flow), tell the user rather than retrying in a loop.

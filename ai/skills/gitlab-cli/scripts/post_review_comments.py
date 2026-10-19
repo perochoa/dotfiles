@@ -2,14 +2,47 @@
 """Post inline diff comments on a GitLab MR.
 
 Usage:
-    python3 post_review_comments.py <project_id> <mr_iid> <findings_json_file> <base_sha> <head_sha> <start_sha>
+    python3 post_review_comments.py <mr_iid> <findings_json_file>
+
+The findings file is a JSON array of {"file": ..., "line": ..., "body": ...} objects
+(use "old_line" instead of "line" for removed lines). The project id and diff_refs SHAs
+are read from the MR itself, so run this right before posting: SHAs change on every push.
 
 Requires: glab CLI (authenticated)
 """
-import subprocess
+from __future__ import annotations
+
 import json
+import os
+import subprocess
 import sys
 import time
+
+
+def mr_refs(mr_iid: str) -> tuple[str, str, str, str] | None:
+    """Return (project_id, base_sha, head_sha, start_sha) for the MR, or None after printing why."""
+    result = subprocess.run(
+        ["glab", "mr", "view", mr_iid, "--output=json"],
+        capture_output=True, text=True, timeout=60,
+    )
+    if result.returncode != 0:
+        print(f"ERROR: glab mr view {mr_iid} failed: {result.stderr.strip()}", file=sys.stderr)
+        return None
+    try:
+        mr = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Could not parse MR JSON: {e}", file=sys.stderr)
+        return None
+    project_id = mr.get("project_id") or mr.get("target_project_id")
+    if not project_id:
+        print("ERROR: Could not determine project ID from MR JSON", file=sys.stderr)
+        return None
+    refs = mr.get("diff_refs") or {}
+    shas = [refs.get(k, "") for k in ("base_sha", "head_sha", "start_sha")]
+    if not all(shas):
+        print("ERROR: Could not extract diff_refs SHAs from MR", file=sys.stderr)
+        return None
+    return str(project_id), *shas
 
 
 def post_comments(project_id: str, mr_iid: str, findings_file: str,
@@ -99,9 +132,25 @@ def post_comments(project_id: str, mr_iid: str, findings_file: str,
     return 0
 
 
+def main(argv: list[str]) -> int:
+    if len(argv) != 2:
+        print("Usage: post-review-comments.sh <mr_iid> <findings_json_file>\n\n"
+              '  findings_json_file: JSON array of {"file": ..., "line": ..., "body": ...}',
+              file=sys.stderr)
+        return 1
+    mr_iid, findings_file = argv
+    if not os.path.isfile(findings_file):
+        print(f"ERROR: Findings file not found: {findings_file}", file=sys.stderr)
+        return 1
+    if subprocess.run(["glab", "auth", "status"], capture_output=True).returncode != 0:
+        print("ERROR: Not authenticated. Run: glab auth login", file=sys.stderr)
+        return 1
+    refs = mr_refs(mr_iid)
+    if refs is None:
+        return 1
+    project_id, base_sha, head_sha, start_sha = refs
+    return post_comments(project_id, mr_iid, findings_file, base_sha, head_sha, start_sha)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 7:
-        print("Usage: python3 post_review_comments.py <project_id> <mr_iid> "
-              "<findings_json_file> <base_sha> <head_sha> <start_sha>", file=sys.stderr)
-        sys.exit(1)
-    sys.exit(post_comments(*sys.argv[1:7]))
+    sys.exit(main(sys.argv[1:]))

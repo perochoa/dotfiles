@@ -80,11 +80,6 @@ copy_template kube/config.eks.template.yaml kube/config.eks.local.yaml
 copy_template shell/zshrc.local.template shell/zshrc.local
 copy_template ai/corrections.template.md ai/corrections.local.md
 
-# Older layouts copied the shared git settings into the local file, where they shadow git/config.
-if [[ -f "$ROOT_DIR/git/gitconfig.local" ]] && grep -qE '^\[(alias|fetch)\]' "$ROOT_DIR/git/gitconfig.local"; then
-  echo "WARN: git/gitconfig.local has [alias]/[fetch] sections that override git/config; keep only [user] and machine-specific settings" >&2
-fi
-
 link shell/zshrc .zshrc
 link git/gitconfig.local .gitconfig
 link git/config .config/git/config
@@ -94,8 +89,8 @@ link nvim .config/nvim
 link ghostty/config .config/ghostty/config
 
 # AI coding assistants share one set of instructions (ai/AGENTS.md) and skills (ai/skills).
-# Remove links left behind by older layouts (copilot/, claude/) or by skills since deleted.
-for stale in "$HOME/.copilot/skills" "$HOME"/.claude/skills/* "$HOME"/.claude/CLAUDE.md "$HOME"/.claude/settings.json; do
+# Remove dangling links into this repo left behind by skills since deleted.
+for stale in "$HOME"/.claude/skills/*; do
   if [[ -L "$stale" && ! -e "$stale" && "$(readlink "$stale")" == "$ROOT_DIR"/* ]]; then
     echo "Removing stale link ~/${stale#"$HOME"/}"
     run rm "$stale"

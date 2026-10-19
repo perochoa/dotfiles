@@ -23,7 +23,7 @@ cd ~/.config/dotfiles
 | --- | --- |
 | `shell/` | zsh config. `zshrc` sets `$DOTFILES` and loads `env.zsh` → `aliases.zsh` → `functions.zsh` → `terminal.zsh` → optional `zshrc.local` |
 | `git/` | `config` (shared settings) and `gitconfig.local.template` (identity) |
-| `homebrew/Brewfile` | Packages for both OSes; casks and macOS-only formulae sit inside `if OS.mac?` |
+| `homebrew/Brewfile` | Packages for both OSes; macOS-only casks and formulae sit inside `if OS.mac?` (`claude-code` is a cross-platform cask) |
 | `fedora/packages.txt` | Native Fedora packages installed with `dnf` |
 | `nvim/` | LazyVim config (see [`nvim/README.md`](nvim/README.md)) |
 | `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
@@ -39,7 +39,7 @@ Everything detects the OS at runtime, so the same files serve both machines.
 - **macOS:** `install-apps.sh` runs `brew bundle`. `./scripts/macos-defaults.sh` applies Finder, Dock, screenshot and key-repeat settings.
 - **Fedora:**
   1. Install [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux). `shell/env.zsh` finds it in `/home/linuxbrew/.linuxbrew`.
-  2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus casks), then Hack Nerd Font and the Copilot CLI.
+  2. `install-apps.sh` installs `fedora/packages.txt` with `dnf`, then the Brewfile (minus the macOS-only block; the `claude-code` cask has Linux builds), then Hack Nerd Font and the Copilot CLI.
   3. Install Ghostty from a COPR (it isn't in the official repos; see <https://ghostty.org/docs/install/binary>), e.g. `sudo dnf copr enable scottames/ghostty && sudo dnf install ghostty`. Check that the COPR builds for your Fedora release first.
   4. `./scripts/linux-defaults.sh` applies the GNOME equivalents of the macOS defaults (key repeat, folders first).
 
@@ -59,7 +59,7 @@ Skills are linked one by one into `~/.claude/skills` because Claude Code also in
 
 ## Machine-specific settings
 
-- **Shell:** `shell/zshrc.local` (from `zshrc.local.template`), loaded last. Define this machine's AWS profile aliases here; each one sources `awsme-sso` for the profile of the same name in `aws/config.local`.
+- **Shell:** `shell/zshrc.local` (from `zshrc.local.template`), loaded last. Define this machine's AWS profile aliases here (each one sources `awsme-sso` for the profile of the same name in `aws/config.local`), plus employer- or machine-specific helpers such as the commented-out `cs` context switcher.
 - **Git:** `git/gitconfig.local` (linked as `~/.gitconfig`) holds your identity and overrides `git/config`. `git config --global` writes there, never to the tracked file.
 - **AWS / Kubernetes:** `aws/config.local`, `kube/config.eks.local.yaml`, and optionally `~/.kube/config.local`.
 
@@ -73,7 +73,7 @@ Add a package to the Brewfile only if most machines need it and it installs from
 ./scripts/check.sh
 ```
 
-Runs shellcheck (if installed) and bash/zsh syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, backups, idempotency, git config layering, and a clean zsh startup. CI runs it on macOS and in a Fedora 44 container.
+Runs shellcheck and ruff (each if installed), bash/zsh/Python syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, local files created from templates, backups, idempotency, the Claude hooks (on macOS also under `/usr/bin/python3`), git config layering, and a clean zsh startup. CI runs it on macOS and in a Fedora 44 container.
 
 ## Secrets
 

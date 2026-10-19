@@ -8,7 +8,7 @@ Managed from `~/.config/dotfiles/nvim` and symlinked to `~/.config/nvim` by `boo
 - `lua/config/` — options (`scrolloff = 8`) and custom keymaps.
 - `lua/plugins/colorscheme.lua` — Tokyo Night (night, transparent).
 - `lua/plugins/snacks.lua` — explorer tweaks: remembers its last directory, `x` moves and `d` deletes files.
-- `lua/plugins/tooling.lua` — extra Mason tools, Treesitter parsers, and Trouble signs.
+- `lua/plugins/tooling.lua` — extra Mason tools, the `jsonc` Treesitter parser (LazyVim and the extras cover the rest), and Trouble signs.
 - `lazy-lock.json` — pinned plugin versions. Commit it after `:Lazy update`; run `:Lazy restore` after pulling.
 
 ## Custom keys
@@ -24,7 +24,7 @@ Managed from `~/.config/dotfiles/nvim` and symlinked to `~/.config/nvim` by `boo
 
 ## Host-aware tooling
 
-`tooling.lua` adapts Mason, LSP and Treesitter to the machine:
+`tooling.lua` adapts Mason and LSP to the machine:
 
 - Go tools (`gopls`, `goimports`, `gofumpt`, `delve`) are only installed when `go` is on `PATH`.
 - pip-based tools (`black`, `debugpy`, `ruff`, `sqlfluff`) are skipped when pip points at an AWS CodeArtifact index, where they fail to install without credentials.

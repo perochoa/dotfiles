@@ -37,10 +37,11 @@ brew "zsh-autocomplete"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 brew "gh"
+# claude-code's cask ships Linux builds too, so it stays outside the macOS block.
 cask "claude-code"
 
-# macOS-only: casks are unsupported on Linux, and Fedora ships podman natively.
-# On Fedora these come from fedora/packages.txt (see README).
+# macOS-only: these casks have no Linux builds, and Fedora ships podman natively.
+# On Fedora these come from fedora/packages.txt or install-apps.sh (see README).
 if OS.mac?
   brew "podman"
 
