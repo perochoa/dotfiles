@@ -15,8 +15,8 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 9 lint python in check.sh
 - [x] 10 awsme-sso single sts call
 - [x] 11 merge gitlab review helper
-- [ ] 12 skills pruning (report only)
-- [ ] 13 bootstrap migration leftovers
+- [x] 12 skills pruning (report only)
+- [x] 13 bootstrap migration leftovers
 - [ ] not pushed, no pr (user decides)
 
 ## Decisions
@@ -30,6 +30,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - python lint: ast.parse (writes no bytecode) + `ruff check --isolated --select E4,E7,E9,F`; ruff 0.17's defaults flag style rules, so the rule set is pinned. 3.9 regression test runs git-guard via /usr/bin/python3 on macOS (verified it fails without the __future__ import).
 - awsme-sso: first `sts get-caller-identity --query Account` doubles as the session check; login + re-query only on failure. Tested with a stub `aws` in bash and zsh (both profile types, valid/expired/failed login). NOT tested against real aws: user must try one sso profile and one login_session profile, each with a valid and an expired session. shellcheck not run locally (not installed); ci runs it.
 - gitlab review helper: post_review_comments.py now takes `<mr_iid> <findings.json>` and does auth check + `glab mr view` itself; the .sh is a thin exec wrapper so the documented command is unchanged. Tested with a stub glab. SKILL.md now points at references/security.md for vulnerability script examples.
+- bootstrap: dropped the [alias]/[fetch] warning and legacy stale-link paths; only the ~/.claude/skills/* glob remains. The ~/.claude/agents/* glob lives on the unmerged feat/architecture-auditor-agent branch, so expect a small conflict in that loop when both merge.
 
 ## Gotchas
 - shellcheck is not installed on this mac, so check.sh skips lint locally; ci runs it.
@@ -39,7 +40,12 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - exit 1 from a claude code hook is non-blocking, so an import crash silently disables the guard.
 
 ## Key files
-- ai/claude/hooks/git-guard.py, scripts/check.sh
+- ai/claude/hooks/git-guard.py, scripts/check.sh, bin/awsme-sso.sh, bootstrap.sh
+- shell/functions.zsh, shell/zshrc.local.template, homebrew/Brewfile, .github/workflows/ci.yml
+- nvim/lua/plugins/{tooling,colorscheme}.lua, ai/skills/gitlab-cli/scripts/post_review_comments.py
 
 ## Open questions
 - internal context/profile names from the old cs() remain in git history (not rewritten). ai/skills/k8s-access/SKILL.md still documents the employer-specific cs mappings in tracked files.
+- manual checks: aws sso + login_session profiles (valid and expired); claude-code cask on fedora via linuxbrew; nvim parser set (`:TSInstallInfo`/`:checkhealth nvim-treesitter`).
+- correction-check.py regex left unchanged (out of scope).
+- push / open pr: user decides.
