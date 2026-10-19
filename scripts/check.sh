@@ -112,6 +112,13 @@ if command -v python3 >/dev/null 2>&1; then
   allows 'git commit -m \"feat/new-config: add config\"' || fail "git-guard rejected a valid commit"
   allows 'git commit -m \"feat/new-config: Add config\"' && fail "git-guard allowed an uppercase message"
   allows 'git push origin feat/new-config:main' && fail "git-guard allowed a push to main"
+  # Mid-rebase HEAD is detached; the branch comes from the rebase state.
+  git -C "$repo" -c user.name=check -c user.email=check@example.invalid commit -q --allow-empty -m "feat/new-config: base"
+  git -C "$repo" switch -q --detach
+  mkdir -p "$repo/.git/rebase-merge" && echo refs/heads/feat/new-config >"$repo/.git/rebase-merge/head-name"
+  allows 'git commit -m \"feat/new-config: add config during rebase\"' || fail "git-guard rejected a valid commit mid-rebase"
+  allows 'git commit -m \"add config during rebase\"' && fail "git-guard dropped the prefix rule mid-rebase"
+  rm -r "$repo/.git/rebase-merge" && git -C "$repo" switch -q feat/new-config
   # Claude Code may run hooks with macOS's /usr/bin/python3 (3.9): the guard must still load and block.
   if [[ "$(uname -s)" == Darwin ]] && xcode-select -p >/dev/null 2>&1 && [[ -x /usr/bin/python3 ]] &&
     [[ "$(/usr/bin/python3 -c 'import sys; print(sys.executable)')" != "$(python3 -c 'import sys; print(sys.executable)')" ]]; then
