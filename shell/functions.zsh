@@ -7,7 +7,6 @@ txtylw="\e[0;33m"
 bldred="\e[1;31m"
 bldgrn="\e[1;32m"
 bldylw="\e[1;33m"
-bldpur="\e[1;35m"
 txtrst="\e[0m"
 
 __date_prefix() {
@@ -16,10 +15,6 @@ __date_prefix() {
 
 log_info() {
   printf "%b\n" "$(__date_prefix)${bldgrn} [INFO] ${txtrst}${1}"
-}
-
-log_debug() {
-  printf "%b\n" "$(__date_prefix)${bldpur} [DEBUG] ${txtrst}${1}"
 }
 
 log_warn() {
