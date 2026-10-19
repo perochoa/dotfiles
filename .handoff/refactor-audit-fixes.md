@@ -11,7 +11,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 5 brewfile claude-code cask
 - [x] 6 ci push only on main
 - [x] 7 move cs() to zshrc.local
-- [ ] 8 one source of commit rules
+- [x] 8 one source of commit rules
 - [ ] 9 lint python in check.sh
 - [ ] 10 awsme-sso single sts call
 - [ ] 11 merge gitlab review helper
