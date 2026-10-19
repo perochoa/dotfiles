@@ -73,7 +73,7 @@ Add a package to the Brewfile only if most machines need it and it installs from
 ./scripts/check.sh
 ```
 
-Runs shellcheck (if installed) and bash/zsh syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, backups, idempotency, git config layering, and a clean zsh startup. CI runs it on macOS and in a Fedora 44 container.
+Runs shellcheck and ruff (each if installed), bash/zsh/Python syntax checks, then bootstraps into a throwaway `$HOME` and verifies links, local files created from templates, backups, idempotency, the Claude hooks (on macOS also under `/usr/bin/python3`), git config layering, and a clean zsh startup. CI runs it on macOS and in a Fedora 44 container.
 
 ## Secrets
 

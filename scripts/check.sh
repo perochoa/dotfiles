@@ -32,7 +32,28 @@ for f in $(bash_scripts); do
 done
 
 log "zsh syntax"
-zsh -n shell/zshrc shell/*.zsh
+zsh -n shell/zshrc shell/*.zsh shell/zshrc.local.template
+
+python_files() {
+  printf '%s\n' ai/claude/hooks/*.py ai/skills/*/scripts/*.py
+}
+
+if command -v python3 >/dev/null 2>&1; then
+  log "python syntax"
+  # shellcheck disable=SC2046 # word splitting of the file list is intended
+  python3 -c 'import ast, sys; [ast.parse(open(f).read(), f) for f in sys.argv[1:]]' $(python_files) ||
+    fail "python syntax"
+fi
+
+# `ruff --version` instead of `command -v`: a pyenv shim exists even when the active env lacks ruff.
+if ruff --version >/dev/null 2>&1; then
+  log "ruff"
+  # Pinned rule set (pyflakes + syntax errors) so results don't depend on the ruff version or user config.
+  # shellcheck disable=SC2046 # word splitting of the file list is intended
+  ruff check --quiet --isolated --no-cache --select E4,E7,E9,F $(python_files)
+else
+  log "ruff not installed; skipping python lint"
+fi
 
 # Fresh machine simulation: copy the repo into a temporary $HOME, then drop every git-ignored
 # file (*.local, *.local.yaml, private/, ...) from the copy so templates are exercised.
@@ -90,6 +111,14 @@ if command -v python3 >/dev/null 2>&1; then
   allows 'git commit -m \"feat/new-config: add config\"' || fail "git-guard rejected a valid commit"
   allows 'git commit -m \"feat/new-config: Add config\"' && fail "git-guard allowed an uppercase message"
   allows 'git push origin feat/new-config:main' && fail "git-guard allowed a push to main"
+  # Claude Code may run hooks with macOS's /usr/bin/python3 (3.9): the guard must still load and block.
+  if [[ "$(uname -s)" == Darwin ]] && xcode-select -p >/dev/null 2>&1 && [[ -x /usr/bin/python3 ]] &&
+    [[ "$(/usr/bin/python3 -c 'import sys; print(sys.executable)')" != "$(python3 -c 'import sys; print(sys.executable)')" ]]; then
+    rc=0
+    printf '{"tool_input":{"command":"git commit -m \\"feat/new-config: Add config\\""},"cwd":"%s"}' "$repo" |
+      /usr/bin/python3 -I "$hook" 2>/dev/null || rc=$?
+    [[ $rc -eq 2 ]] || fail "git-guard did not block under /usr/bin/python3 (exit $rc)"
+  fi
   [[ -f "$TEST_HOME/.config/dotfiles/ai/corrections.local.md" ]] || fail "corrections log not created from template"
   printf '{"prompt":"never do that again"}' | "$TEST_HOME/.claude/hooks/correction-check.py" | grep -q correction-check ||
     fail "correction-check hook ignored a correction"
