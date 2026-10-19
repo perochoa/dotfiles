@@ -88,6 +88,7 @@ fi
 log "symlinks"
 for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.toml .config/nvim \
   .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/hooks .claude/skills/gitlab-cli \
+  .claude/agents/architecture-auditor.md \
   .copilot/copilot-instructions.md .agents/skills \
   .local/bin/clip .local/bin/awsme-sso; do
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
