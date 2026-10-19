@@ -7,7 +7,7 @@ git-guard must know the branch while HEAD is detached mid-rebase, so commit-mess
 ## Status
 - [x] `current_branch()` falls back to `rebase-merge`/`rebase-apply` `head-name`
 - [x] check.sh regression test (detached HEAD + fake rebase-merge state)
-- [ ] push and open the PR (waiting on user)
+- [x] pushed and PR opened
 
 ## Decisions
 - Read the rebase state via `git rev-parse --path-format=absolute --git-path <state>/head-name`,
