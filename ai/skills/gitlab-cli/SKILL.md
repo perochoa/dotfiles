@@ -226,23 +226,7 @@ See [references/pipelines.md](references/pipelines.md) for full pipeline remedia
 
 ### One-Shot Scripts (Recommended)
 
-Script paths below are relative to this skill's directory (resolve from the `Path:` in the skill invocation metadata).
-
-```bash
-# List all high-severity findings, deduplicated and formatted
-scripts/list-vulnerabilities.sh high
-
-# Critical + high
-scripts/list-vulnerabilities.sh critical,high
-
-# Filter by report type too
-scripts/list-vulnerabilities.sh high dependency_scanning
-
-# Show FULL detail for a specific vulnerability (description, solution, CVEs, links)
-scripts/show-vulnerability.sh immutable
-scripts/show-vulnerability.sh CVE-2026-29063
-scripts/show-vulnerability.sh serialize-javascript
-```
+Use `scripts/list-vulnerabilities.sh <severity>[,<severity>] [report_type]` to list findings (deduplicated) and `scripts/show-vulnerability.sh <package|CVE|GHSA|keyword>` for full detail. Paths are relative to this skill's directory; see [references/security.md](references/security.md#one-shot-scripts-recommended) for examples.
 
 ### Manual API Calls
 

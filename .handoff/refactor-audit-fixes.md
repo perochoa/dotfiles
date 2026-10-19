@@ -14,7 +14,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 8 one source of commit rules
 - [x] 9 lint python in check.sh
 - [x] 10 awsme-sso single sts call
-- [ ] 11 merge gitlab review helper
+- [x] 11 merge gitlab review helper
 - [ ] 12 skills pruning (report only)
 - [ ] 13 bootstrap migration leftovers
 - [ ] not pushed, no pr (user decides)
@@ -29,11 +29,13 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - cs(): copied verbatim into this mac's untracked shell/zshrc.local, removed from functions.zsh; template has a commented dev/staging/prod example. log_warn/log_error kept: the local cs and the template example use them.
 - python lint: ast.parse (writes no bytecode) + `ruff check --isolated --select E4,E7,E9,F`; ruff 0.17's defaults flag style rules, so the rule set is pinned. 3.9 regression test runs git-guard via /usr/bin/python3 on macOS (verified it fails without the __future__ import).
 - awsme-sso: first `sts get-caller-identity --query Account` doubles as the session check; login + re-query only on failure. Tested with a stub `aws` in bash and zsh (both profile types, valid/expired/failed login). NOT tested against real aws: user must try one sso profile and one login_session profile, each with a valid and an expired session. shellcheck not run locally (not installed); ci runs it.
+- gitlab review helper: post_review_comments.py now takes `<mr_iid> <findings.json>` and does auth check + `glab mr view` itself; the .sh is a thin exec wrapper so the documented command is unchanged. Tested with a stub glab. SKILL.md now points at references/security.md for vulnerability script examples.
 
 ## Gotchas
 - shellcheck is not installed on this mac, so check.sh skips lint locally; ci runs it.
 - `brew bundle list` triggers homebrew auto-update; set HOMEBREW_NO_AUTO_UPDATE=1 to avoid it.
 - the pyenv `ruff` shim exists even when the active env lacks ruff; check.sh probes `ruff --version`. `PYENV_VERSION=csus-claude-code-ws` has ruff for a manual run.
+- ai/skills/*/scripts/*.sh are tracked as 100644, so `scripts/foo.sh` as documented fails with permission denied; run with `bash` (pre-existing, left as is).
 - exit 1 from a claude code hook is non-blocking, so an import crash silently disables the guard.
 
 ## Key files
