@@ -89,38 +89,7 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      local parsers = {
-        "bash",
-        "dockerfile",
-        "go",
-        "gomod",
-        "gosum",
-        "hcl",
-        "html",
-        "javascript",
-        "json",
-        "jsonc",
-        "lua",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "query",
-        "regex",
-        "sql",
-        "terraform",
-        "toml",
-        "tsx",
-        "typescript",
-        "vim",
-        "yaml",
-      }
-      opts.ensure_installed = opts.ensure_installed or {}
-      for _, parser in ipairs(parsers) do
-        if not vim.tbl_contains(opts.ensure_installed, parser) then
-          table.insert(opts.ensure_installed, parser)
-        end
-      end
-    end,
+    -- LazyVim and the enabled extras install every other parser we use; ensure_installed is extended.
+    opts = { ensure_installed = { "jsonc" } },
   },
 }
