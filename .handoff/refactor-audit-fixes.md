@@ -16,7 +16,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - [x] 10 awsme-sso single sts call
 - [x] 11 merge gitlab review helper
 - [x] 12 k8s-access rewritten to discover local config (no hardcoded accounts/contexts)
-- [ ] 12 prune generic skills: blocked by auto-mode permission, waiting on user
+- [x] 12 pruned 26 generic/stale skills (kept gitlab-cli, jira-confluence, k8s-access, engineering-standards, documentation-standards)
 - [x] gitlab-cli scripts made executable
 - [x] 13 bootstrap migration leftovers
 - [x] pushed, pr opened (user asked)
@@ -39,7 +39,7 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 - the pyenv `ruff` shim exists even when the active env lacks ruff; check.sh probes `ruff --version`. `PYENV_VERSION=csus-claude-code-ws` has ruff for a manual run.
 - exit 1 from a claude code hook is non-blocking, so an import crash silently disables the guard.
 
-- skill deletion (`git rm -r ai/skills/<name>`) was denied by claude code auto mode; the user must run it or allow it.
+- after merge, re-run ./bootstrap.sh so the stale ~/.claude/skills links get removed.
 
 ## Key files
 - ai/claude/hooks/git-guard.py, scripts/check.sh, bin/awsme-sso.sh, bootstrap.sh
@@ -49,5 +49,4 @@ Apply the architecture-audit fixes (13 numbered steps) to the dotfiles repo, one
 ## Open questions
 - internal names remain in git history: user says that's fine (personal config).
 - manual checks: aws sso + login_session profiles (valid and expired); claude-code cask on fedora via linuxbrew; nvim parser set (`:TSInstallInfo`/`:checkhealth nvim-treesitter`).
-- skills to prune (user approved "all stale, generic"): api-connector-builder api-design backend-patterns cicd-patterns database-migrations deep-research (firecrawl/exa mcps not configured) deployment-patterns design-system docker-patterns golang-patterns golang-testing java-patterns lua-patterns prompt-optimizer python-patterns python-testing react-patterns react-performance react-testing rust-testing security-review shell-patterns tdd-workflow terraform-patterns typescript-patterns web-browsing. keep gitlab-cli, jira-confluence, k8s-access, engineering-standards, documentation-standards. also change `.claude/skills/python-patterns` in scripts/check.sh symlink list to a kept skill.
 - correction-check.py regex left unchanged (out of scope).
