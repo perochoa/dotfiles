@@ -57,6 +57,19 @@ def git(repo: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
+def current_branch(repo: Path) -> str:
+    """Return the checked-out branch, or the branch being rebased while HEAD is detached."""
+    branch = git(repo, "branch", "--show-current")
+    if branch:
+        return branch
+    for state in ("rebase-merge", "rebase-apply"):
+        path = git(repo, "rev-parse", "--path-format=absolute", "--git-path", f"{state}/head-name")
+        head = Path(path) if path else None
+        if head and head.is_file():
+            return head.read_text().strip().removeprefix("refs/heads/")
+    return ""
+
+
 def split_git(tokens: list[str], cwd: Path) -> tuple[Path, str, list[str]] | None:
     """Return (repo dir, subcommand, args) for a git invocation, or None if it isn't one."""
     if not tokens or Path(tokens[0]).name != "git":
@@ -184,7 +197,7 @@ def push_problems(args: list[str], branch: str) -> list[str]:
 
 def check(sub: str, args: list[str], raw: str, repo: Path) -> list[str]:
     """Return every rule this git invocation breaks."""
-    branch = git(repo, "branch", "--show-current")
+    branch = current_branch(repo)
     found = []
     if sub in MAIN_CHANGING and branch in PROTECTED:
         if not (sub == "merge" and "--ff-only" in args):  # fast-forwarding to the remote is fine
