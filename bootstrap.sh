@@ -89,8 +89,8 @@ link nvim .config/nvim
 link ghostty/config .config/ghostty/config
 
 # AI coding assistants share one set of instructions (ai/AGENTS.md) and skills (ai/skills).
-# Remove dangling links into this repo left behind by skills since deleted.
-for stale in "$HOME"/.claude/skills/*; do
+# Remove dangling links into this repo left behind by skills or agents since deleted.
+for stale in "$HOME"/.claude/skills/* "$HOME"/.claude/agents/*; do
   if [[ -L "$stale" && ! -e "$stale" && "$(readlink "$stale")" == "$ROOT_DIR"/* ]]; then
     echo "Removing stale link ~/${stale#"$HOME"/}"
     run rm "$stale"
@@ -105,6 +105,11 @@ link ai/skills .agents/skills
 for skill in "$ROOT_DIR"/ai/skills/*/; do
   name="$(basename "$skill")"
   link "ai/skills/$name" ".claude/skills/$name"
+done
+# Same for subagents: Claude Code's /agents command writes its own into ~/.claude/agents.
+for agent in "$ROOT_DIR"/ai/claude/agents/*.md; do
+  name="$(basename "$agent")"
+  link "ai/claude/agents/$name" ".claude/agents/$name"
 done
 
 # bin/ scripts go on PATH without their .sh extension
