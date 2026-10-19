@@ -34,12 +34,16 @@ done
 log "zsh syntax"
 zsh -n shell/zshrc shell/*.zsh
 
-# Fresh machine simulation: copy the repo (minus local-only files) into a temporary $HOME.
+# Fresh machine simulation: copy the repo into a temporary $HOME, then drop every git-ignored
+# file (*.local, *.local.yaml, private/, ...) from the copy so templates are exercised.
 TEST_HOME="$(mktemp -d)"
 trap 'rm -rf "$TEST_HOME"' EXIT
 mkdir -p "$TEST_HOME/.config"
 cp -R "$ROOT_DIR" "$TEST_HOME/.config/dotfiles"
-find "$TEST_HOME/.config/dotfiles" \( -name '*.local' -o -name '*.local.md' \) -delete
+TEST_HOME="$(cd "$TEST_HOME" && pwd -P)"
+[[ "$(git -C "$TEST_HOME/.config/dotfiles" rev-parse --show-toplevel)" == "$TEST_HOME/.config/dotfiles" ]] ||
+  fail "repo copy does not resolve to its own worktree; refusing to git clean"
+git -C "$TEST_HOME/.config/dotfiles" clean -fdXq
 
 # Pre-existing configs with the same basename must both survive as backups.
 mkdir -p "$TEST_HOME/.config/git" "$TEST_HOME/.config/ghostty"
@@ -66,6 +70,11 @@ for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.tom
   .copilot/copilot-instructions.md .agents/skills \
   .local/bin/clip .local/bin/awsme-sso; do
   [[ -L "$TEST_HOME/$link" && -e "$TEST_HOME/$link" ]] || fail "missing or broken link: ~/$link"
+done
+
+log "local files from templates"
+for local in git/gitconfig.local aws/config.local kube/config.eks.local.yaml shell/zshrc.local; do
+  [[ -f "$TEST_HOME/.config/dotfiles/$local" ]] || fail "not created from template: $local"
 done
 
 log "claude hooks"
