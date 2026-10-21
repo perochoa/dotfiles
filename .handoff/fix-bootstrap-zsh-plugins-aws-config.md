@@ -9,7 +9,7 @@ loading, and no `~/.aws/config`.
 - [x] bootstrap links `~/.aws/config` -> `aws/config.local`
 - [x] check.sh: `.aws/config` link + plugin load test without HOMEBREW_PREFIX (fails without the fix)
 - [ ] user re-runs bootstrap + opens a new shell on the other machine to confirm
-- [ ] push + pr (only when user asks)
+- [x] pushed, pr #11 opened
 
 ## Decisions
 - Root cause (reproduced here, not yet confirmed on the other machine): brew on PATH but
