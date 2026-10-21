@@ -10,7 +10,8 @@ recorded and the implementer's file scope is what the audit meant.
 - [x] check.sh regression cases (fail on the old hook, pass on the new)
 - [x] auditor prompt: verbatim headings, continuous step numbering, full-path citations, cwd-only
       repo, no secret values in reports
-- [ ] push and open the PR (only when the user asks)
+- [x] pushed; PR #12 open
+- [ ] merge PR #12
 
 ## Decisions
 - Bare-name citations match the repo root only: the old basename match let `README.md` grant
