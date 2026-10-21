@@ -87,7 +87,7 @@ fi
 
 log "symlinks"
 for link in .zshrc .gitconfig .config/git/config .tmux.conf .config/starship.toml .config/nvim \
-  .config/ghostty/config .claude/CLAUDE.md .claude/settings.json .claude/hooks .claude/skills/gitlab-cli \
+  .config/ghostty/config .aws/config .claude/CLAUDE.md .claude/settings.json .claude/hooks .claude/skills/gitlab-cli \
   .claude/agents/architecture-auditor.md .claude/agents/architecture-implementer.md \
   .copilot/copilot-instructions.md .agents/skills \
   .local/bin/clip .local/bin/awsme-sso; do
@@ -198,5 +198,14 @@ log "interactive zsh startup"
 startup_output="$(cd "$TEST_HOME" && HOME="$TEST_HOME" TERM=xterm-256color zsh -i -c 'print -r -- "AWS=$AWS_CONFIG_FILE"' 2>&1)"
 [[ "$startup_output" == "AWS=$TEST_HOME/.config/dotfiles/aws/config.local" ]] ||
   fail "zsh startup printed errors or did not set AWS_CONFIG_FILE:"$'\n'"$startup_output"
+
+# brew on PATH without HOMEBREW_PREFIX (e.g. PATH set by ~/.profile) must still load the zsh plugins
+if command -v brew >/dev/null 2>&1 && [[ -d "$(brew --prefix)/share/zsh-syntax-highlighting" ]]; then
+  log "zsh plugins without HOMEBREW_PREFIX"
+  # shellcheck disable=SC2016 # expanded by the inner zsh
+  highlighting="$(cd "$TEST_HOME" && env -u HOMEBREW_PREFIX HOME="$TEST_HOME" TERM=xterm-256color \
+    PATH="$(dirname "$(command -v brew)"):/usr/bin:/bin" zsh -i -c 'print -r -- ${+ZSH_HIGHLIGHT_VERSION}' 2>&1)"
+  [[ "$highlighting" == "1" ]] || fail "zsh-syntax-highlighting not loaded without HOMEBREW_PREFIX:"$'\n'"$highlighting"
+fi
 
 log "all checks passed"

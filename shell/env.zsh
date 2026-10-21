@@ -2,9 +2,10 @@
 
 # Environment shared by macOS and Linux. Loaded first so later modules can rely on it.
 
-# Homebrew: macOS (Apple Silicon / Intel) or Linuxbrew. Skipped if already on PATH (e.g. via ~/.zprofile).
-if (( ! $+commands[brew] )); then
-  for _brew in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew "$HOME/.linuxbrew/bin/brew"; do
+# Homebrew: macOS (Apple Silicon / Intel) or Linuxbrew. Skipped if shellenv already ran (e.g. via ~/.zprofile).
+# brew on PATH alone is not enough: terminal.zsh finds the zsh plugins through HOMEBREW_PREFIX.
+if [[ -z ${HOMEBREW_PREFIX:-} ]]; then
+  for _brew in $commands[brew] /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew "$HOME/.linuxbrew/bin/brew"; do
     if [[ -x $_brew ]]; then
       eval "$($_brew shellenv)"
       break
