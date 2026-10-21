@@ -25,6 +25,7 @@ MAX_SUBJECT = 72
 BRANCH_TYPES = "feat|fix|docs|refactor|test|chore|ci|perf|build|style|revert"
 DEFAULT_BRANCH_PATTERN = rf"^({BRANCH_TYPES})/[a-z0-9]+(-[a-z0-9]+)*$"
 MAIN_CHANGING = {"commit", "merge", "rebase", "cherry-pick", "revert", "am"}
+LONG_WITH_VALUE = {"--message", "--file", "--reuse-message", "--reedit-message", "--template"}
 ATTRIBUTION = re.compile(
     r"co-authored-by|generated (with|by)\b.*\b(claude|copilot|ai)\b|\bclaude code\b|noreply@anthropic",
     re.IGNORECASE,
@@ -97,24 +98,52 @@ def expand(value: str, raw: str) -> str:
     return value
 
 
+def commit_options(args: list[str]) -> list[tuple[str, str]]:
+    """Return the (-m|-F, value) options of a `git commit`, reading short flags the way git does.
+
+    Short flags can be bundled (`-qm msg`, `-aF -`, `-qmmsg`): the first one that takes a value
+    gets the rest of the bundle, or the next argument.
+    """
+    found, i = [], 0
+    while i < len(args):
+        arg = args[i]
+        i += 1
+        if arg == "--":
+            break
+        if arg.startswith("--"):
+            name, eq, value = arg.partition("=")
+            if name in LONG_WITH_VALUE and not eq and i < len(args):
+                value, i = args[i], i + 1
+            if name in ("--message", "--file"):
+                found.append(("-m" if name == "--message" else "-F", value))
+            continue
+        if not arg.startswith("-") or arg == "-":
+            continue
+        for k, flag in enumerate(arg[1:], 1):
+            if flag in "mFcCt":  # flags that take a value
+                value = arg[k + 1 :]
+                if not value and i < len(args):
+                    value, i = args[i], i + 1
+                if flag in "mF":
+                    found.append((f"-{flag}", value))
+                break
+            if flag in "Su":  # optional value, attached only
+                break
+    return found
+
+
 def commit_message(args: list[str], raw: str, repo: Path) -> str | None:
     """Return the message a `git commit` would use, or None if it isn't given inline or by file."""
     messages = []
-    for j, arg in enumerate(args):
-        nxt = args[j + 1] if j + 1 < len(args) else None
-        if arg in ("-m", "--message") and nxt is not None:
-            messages.append(expand(nxt, raw))
-        elif arg.startswith("--message="):
-            messages.append(expand(arg.split("=", 1)[1], raw))
-        elif arg.startswith("-m") and len(arg) > 2:
-            messages.append(expand(arg[2:], raw))
-        elif arg in ("-F", "--file") and nxt is not None:
-            if nxt == "-":
-                match = HEREDOC.search(raw)
-                messages.append(match.group(2) if match else None)
-            else:
-                path = Path(nxt) if Path(nxt).is_absolute() else repo / nxt
-                messages.append(path.read_text() if path.is_file() else None)
+    for flag, value in commit_options(args):
+        if flag == "-m":
+            messages.append(expand(value, raw))
+        elif value == "-":
+            match = HEREDOC.search(raw)
+            messages.append(match.group(2) if match else None)
+        else:
+            path = Path(value) if Path(value).is_absolute() else repo / value
+            messages.append(path.read_text() if path.is_file() else None)
     if not messages or None in messages:
         return None
     return "\n\n".join(m.strip() for m in messages)

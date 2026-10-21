@@ -111,6 +111,11 @@ if command -v python3 >/dev/null 2>&1; then
   git -C "$repo" switch -q -c feat/new-config
   allows 'git commit -m \"feat/new-config: add config\"' || fail "git-guard rejected a valid commit"
   allows 'git commit -m \"feat/new-config: Add config\"' && fail "git-guard allowed an uppercase message"
+  # Bundled short flags: the subject is the value of -qm, the body comes from the second -m.
+  allows 'git commit -qm \"feat/new-config: add config\" -m \"why it changed\"' ||
+    fail "git-guard misread a bundled -qm subject"
+  allows 'git commit -qm \"feat/new-config: Add config\"' && fail "git-guard skipped a bundled -qm message"
+  allows 'git commit -qmfeat/new-config:\\ add\\ config' || fail "git-guard misread an attached -qm value"
   allows 'git push origin feat/new-config:main' && fail "git-guard allowed a push to main"
   # Mid-rebase HEAD is detached; the branch comes from the rebase state.
   git -C "$repo" -c user.name=check -c user.email=check@example.invalid commit -q --allow-empty -m "feat/new-config: base"
