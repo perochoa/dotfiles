@@ -277,7 +277,7 @@ def expand_braces(pattern: str) -> list[str]:
 
 
 def cited_paths(report: str, repo: Path) -> set[str]:
-    """Paths, globs and `dir/` prefixes the report cites, relative to the repo."""
+    """Paths, globs and `dir/` prefixes the report cites, relative to the repo (a bare name is a root file)."""
     tokens = [t for span in BACKTICKED.findall(report) for t in span.split()]
     tokens += BARE_PATH.findall(report)
     cited = set()
@@ -288,8 +288,8 @@ def cited_paths(report: str, repo: Path) -> set[str]:
         token = token.removeprefix("./")
         if not token or token.startswith(("-", "/", "~", "$", "http")) or "=" in token or ".." in token:
             continue
-        if "/" not in token and "." not in token.strip("."):
-            continue  # a word, not a file
+        if "/" not in token and "." not in token.strip(".") and not (repo / token).is_file():
+            continue  # a word, not a file (`Makefile` and `.zshrc` count when they exist)
         for path in expand_braces(token):
             glob_at = min((path.find(c) for c in "*?[" if c in path), default=-1)
             if glob_at != -1 and "/" not in path[:glob_at]:
@@ -302,9 +302,6 @@ def in_scope(rel: str, cited: set[str]) -> bool:
     for pattern in cited:
         if pattern.endswith("/"):
             if rel.startswith(pattern):
-                return True
-        elif "/" not in pattern:
-            if Path(rel).name == pattern:
                 return True
         elif rel == pattern or fnmatch.fnmatchcase(rel, pattern):
             return True
