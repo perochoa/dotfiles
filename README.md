@@ -14,7 +14,7 @@ cd ~/.config/dotfiles
 `bootstrap.sh` is safe to re-run. It:
 
 1. Creates `git/gitconfig.local`, `aws/config.local`, `kube/config.eks.local.yaml`, `shell/zshrc.local` and `ai/corrections.local.md` from their templates if missing.
-2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, the AI assistant config from `ai/` (see below), and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
+2. Symlinks `~/.zshrc`, `~/.gitconfig`, `~/.config/git/config`, `~/.tmux.conf`, `~/.config/starship.toml`, `~/.config/nvim`, `~/.config/ghostty/config`, `~/.aws/config` (→ `aws/config.local`), the AI assistant config from `ai/` (see below), and each `bin/*.sh` as `~/.local/bin/<name>`. Existing files are moved to `~/.backups/dotfiles/<timestamp>/`.
 3. Switches the login shell to the system zsh if needed (Fedora defaults to bash). `--skip-shell` opts out. The change applies to new login sessions: log out and back in, or run `exec zsh` in open terminals. `~/.zshrc` is zsh-only and refuses to load in bash.
 
 ## Layout
@@ -28,7 +28,7 @@ cd ~/.config/dotfiles
 | `nvim/` | LazyVim config (see [`nvim/README.md`](nvim/README.md)) |
 | `tmux/`, `starship/`, `ghostty/` | Terminal, prompt and multiplexer config |
 | `bin/` | `clip.sh` (cross-platform clipboard) and `awsme-sso.sh` (AWS sign-in for SSO and `aws login` profiles; must be sourced) |
-| `aws/`, `kube/` | Config templates; the shell points `AWS_CONFIG_FILE` and `KUBECONFIG` at the local copies |
+| `aws/`, `kube/` | Config templates; `~/.aws/config` links to `aws/config.local` (the shell also sets `AWS_CONFIG_FILE`) and `KUBECONFIG` points at the local kube copies |
 | `ai/` | Shared config for AI coding assistants (see [AI assistants](#ai-assistants)) |
 | `scripts/` | `install-apps.sh`, `macos-defaults.sh`, `linux-defaults.sh`, `check.sh` |
 

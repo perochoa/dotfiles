@@ -87,6 +87,7 @@ link tmux/tmux.conf .tmux.conf
 link starship/starship.toml .config/starship.toml
 link nvim .config/nvim
 link ghostty/config .config/ghostty/config
+link aws/config.local .aws/config
 
 # AI coding assistants share one set of instructions (ai/AGENTS.md) and skills (ai/skills).
 # Remove dangling links into this repo left behind by skills or agents since deleted.
