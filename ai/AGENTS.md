@@ -33,8 +33,8 @@ repository keep a handoff document that lets the next session pick up without me
 - **Where it lives depends on the repo**:
   - Repo tracks an `AGENTS.md` or `CLAUDE.md` (root or `.claude/CLAUDE.md`): `.handoff/` sits in the
     worktree and is committed on the feature branch with the work it describes.
-  - Repo has neither: the handoffs are local only. **Don't create, commit, or push an `AGENTS.md`
-    or `CLAUDE.md`** for this (or any other reason I didn't ask for). Keep `.handoff/` in the main
+  - Repo has neither: the handoffs are local only. **Don't commit or push an `AGENTS.md` or
+    `CLAUDE.md`** for this (see "AI assistant config" below). Keep `.handoff/` in the main
     worktree, so it survives removing other worktrees, and list `/.handoff/` in the repo's
     `$(git rev-parse --git-common-dir)/info/exclude`, never in `.gitignore`. Never `git add -f` it.
 - **Start of a session**: read the doc for the current branch, and any others relevant to the task,
@@ -50,6 +50,16 @@ repository keep a handoff document that lets the next session pick up without me
   Write facts the code and git history don't already show. No secrets or credentials.
 - When the work is merged or abandoned, set `Status` to done or abandoned. Delete the doc once
   it stops being useful.
+
+## AI assistant config
+- `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` and `.claude/` are local to me **unless the repository
+  already has them on its remote** (I'm often the only one on a team using these tools).
+- When you create one the repo doesn't have (e.g. via `/init`), list it in
+  `$(git rev-parse --git-common-dir)/info/exclude` straight away, never in `.gitignore`. Don't
+  offer to commit it, and never `git add -f` it.
+- If the repo already tracks them, they're shared: edit and commit them like any other file.
+- `git-guard.py` enforces this. A repo where I asked to share them opts out with
+  `git config ai.shareAgentConfig true`.
 
 ## Git branches
 - **Never commit to, push to, merge into, or rebase `main` (or `master`) directly.** Before changing

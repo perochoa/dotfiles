@@ -124,6 +124,19 @@ if command -v python3 >/dev/null 2>&1; then
   allows 'git commit -m \"feat/new-config: add config during rebase\"' || fail "git-guard rejected a valid commit mid-rebase"
   allows 'git commit -m \"add config during rebase\"' && fail "git-guard dropped the prefix rule mid-rebase"
   rm -r "$repo/.git/rebase-merge" && git -C "$repo" switch -q feat/new-config
+  # AI assistant config stays local unless the repo already has it.
+  touch "$repo/CLAUDE.md" && mkdir -p "$repo/.claude" && touch "$repo/.claude/settings.json"
+  allows 'git add -f CLAUDE.md' && fail "git-guard allowed adding a new CLAUDE.md"
+  allows 'git add .claude/settings.json' && fail "git-guard allowed adding new .claude/ config"
+  git -C "$repo" add -f CLAUDE.md
+  allows 'git commit -m \"feat/new-config: add notes\"' && fail "git-guard allowed committing a new CLAUDE.md"
+  git -C "$repo" config ai.shareAgentConfig true
+  allows 'git commit -m \"feat/new-config: add notes\"' || fail "git-guard ignored ai.shareAgentConfig"
+  git -C "$repo" -c user.name=check -c user.email=check@example.invalid commit -q -m "feat/new-config: share notes"
+  git -C "$repo" config --unset ai.shareAgentConfig
+  echo shared >"$repo/CLAUDE.md"
+  allows 'git commit -am \"feat/new-config: edit notes\"' || fail "git-guard blocked editing a CLAUDE.md the repo has"
+  git -C "$repo" reset -q --hard HEAD~1 && rm -r "$repo/.claude"
   # Claude Code may run hooks with macOS's /usr/bin/python3 (3.9): the guard must still load and block.
   if [[ "$(uname -s)" == Darwin ]] && xcode-select -p >/dev/null 2>&1 && [[ -x /usr/bin/python3 ]] &&
     [[ "$(/usr/bin/python3 -c 'import sys; print(sys.executable)')" != "$(python3 -c 'import sys; print(sys.executable)')" ]]; then
