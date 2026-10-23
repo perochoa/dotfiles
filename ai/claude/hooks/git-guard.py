@@ -6,6 +6,9 @@
 - New branches are named `<type>/<kebab-description>` (or the repo's `git config ai.branchPattern`).
 - No plain force-push (`--force-with-lease` is fine on feature branches).
 - Commit messages: no AI attribution, all lowercase, `<branch>: ` prefix, short subject.
+- AI assistant config (CLAUDE.md, CLAUDE.local.md, AGENTS.md, .claude/) is never added or
+  committed unless the repo already has that file (on the remote's default branch, or in HEAD when
+  there's no remote), or `git config ai.shareAgentConfig true` opts the repo in.
 
 Exit 2 blocks the command and shows the reasons to the assistant. Anything this script can't
 parse is allowed through rather than blocked.
@@ -33,6 +36,12 @@ ATTRIBUTION = re.compile(
 HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n(.*?)\n\s*\1\b", re.DOTALL)
 SEPARATORS = {"&&", "||", ";", "|", "&"}
 NO_BRANCH_FIX = "create a branch first: git switch -c <type>/<description>"
+AGENT_CONFIG = re.compile(r"(^|/)(CLAUDE(\.local)?\.md|AGENTS\.md)$|(^|/)\.claude(/|$)")
+AGENT_CONFIG_FIX = (
+    "is local AI assistant config the repo doesn't have yet; keep it out of git by listing it in "
+    "$(git rev-parse --git-common-dir)/info/exclude (or `git config ai.shareAgentConfig true` "
+    "if the user asked to share it)."
+)
 
 
 def segments(command: str) -> list[list[str]]:
@@ -224,6 +233,42 @@ def push_problems(args: list[str], branch: str) -> list[str]:
     return found
 
 
+def repo_has(repo: Path, path: str) -> bool:
+    """True if the remote's default branch (or HEAD, with no remote) already tracks path."""
+    base = git(repo, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD")
+    if not base:
+        for candidate in ("origin/main", "origin/master"):
+            if git(repo, "rev-parse", "--verify", "--quiet", candidate):
+                base = candidate
+                break
+    return bool(git(repo, "ls-tree", "-r", "--name-only", base or "HEAD", "--", path))
+
+
+def agent_config_problems(sub: str, args: list[str], repo: Path) -> list[str]:
+    """Block adding or committing AI assistant config the repo doesn't already have."""
+    if sub not in ("add", "commit") or git(repo, "config", "--bool", "ai.shareAgentConfig") == "true":
+        return []
+    top = git(repo, "rev-parse", "--show-toplevel")
+    if not top:
+        return []
+    if sub == "add":
+        paths = []
+        for arg in (a for a in args if not a.startswith("-")):
+            try:
+                paths.append((repo / arg).resolve().relative_to(Path(top).resolve()).as_posix())
+            except ValueError:
+                continue
+    else:
+        paths = git(repo, "diff", "--cached", "--name-only", "--diff-filter=d").splitlines()
+        if any(a == "--all" or re.fullmatch(r"-[a-zA-Z]*a[a-zA-Z]*", a) for a in args):
+            paths += git(repo, "diff", "--name-only", "--diff-filter=d").splitlines()
+    return [
+        f"'{path}' {AGENT_CONFIG_FIX}"
+        for path in dict.fromkeys(paths)
+        if AGENT_CONFIG.search(path) and not repo_has(repo, path)
+    ]
+
+
 def check(sub: str, args: list[str], raw: str, repo: Path) -> list[str]:
     """Return every rule this git invocation breaks."""
     branch = current_branch(repo)
@@ -240,6 +285,7 @@ def check(sub: str, args: list[str], raw: str, repo: Path) -> list[str]:
     name = new_branch_name(sub, args)
     if name:
         found += branch_problems(name, repo)
+    found += agent_config_problems(sub, args, repo)
     return found
 
 
