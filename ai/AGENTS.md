@@ -38,8 +38,7 @@ repository keep a handoff document that lets the next session pick up without me
     worktree, so it survives removing other worktrees, and list `/.handoff/` in the repo's
     `$(git rev-parse --git-common-dir)/info/exclude`, never in `.gitignore`. Never `git add -f` it.
 - **Start of a session**: read the doc for the current branch, and any others relevant to the task,
-  before doing anything. Claude Code's `session-handoff.py` hook prints the path, the mode, and the
-  doc; other assistants check `.handoff/` themselves.
+  before doing anything.
 - **Keep it current**: update it after each meaningful step (a decision made, a task done, a
   blocker found), before committing, and before you stop. Don't leave it for the end of the
   session: I may clear it without warning.
