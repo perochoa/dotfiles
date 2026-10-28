@@ -16,17 +16,6 @@
             "statusMessage": "checking git rules"
           }
         ]
-      },
-      {
-        "matcher": "Agent|Task|Bash|Edit|Write|MultiEdit|NotebookEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/audit-gate.py",
-            "timeout": 15,
-            "statusMessage": "checking audit rules"
-          }
-        ]
       }
     ],
     "UserPromptSubmit": [
