@@ -26,7 +26,9 @@ def main() -> int:
         return 0
     entries = []
     if LOG.is_file():
-        entries = [line for line in LOG.read_text().splitlines() if line.startswith("- ")]
+        entries = [
+            line for line in LOG.read_text().splitlines() if line.startswith("- ")
+        ]
     recent = "\n".join(entries[-MAX_ENTRIES:]) or "(no entries yet)"
     print(
         "[correction-check] This prompt may contain a behavioural correction or preference. "

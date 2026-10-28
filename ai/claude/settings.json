@@ -1,5 +1,4 @@
 {
-  "theme": "auto",
   "attribution": {
     "commit": "",
     "pr": "",
@@ -40,28 +39,9 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/session-handoff.py",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME\"/.claude/hooks/audit-gate.py",
-            "timeout": 30
-          }
-        ]
-      }
     ]
-  }
+  },
+  "feedbackDrafts": "notify",
+  "theme": "auto",
+  "awaySummaryEnabled": false
 }

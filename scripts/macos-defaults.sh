@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Apply a reproducible baseline of macOS user defaults.
+# Apply a reproducible baseline of macOS user defaults (Finder, Dock, screenshots, keyboard),
+# then restart the apps that read them. linux-defaults.sh mirrors these on GNOME.
 
 usage() {
   cat <<'EOF'
@@ -13,10 +14,14 @@ Options:
 EOF
 }
 
-DRY_RUN=false
-
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO  $*"; }
 warn() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN  $*" >&2; }
+error() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR $*" >&2
+  exit 1
+}
+
+DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -29,59 +34,54 @@ while [[ $# -gt 0 ]]; do
     exit 0
     ;;
   *)
-    echo "Unknown argument: $1" >&2
-    usage
-    exit 1
+    usage >&2
+    error "Unknown argument: $1"
     ;;
   esac
 done
 
-if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "This script only supports macOS." >&2
-  exit 1
-fi
+[[ "$(uname -s)" == "Darwin" ]] || error "This script only supports macOS."
 
-run_cmd() {
-  local command=("$@")
+# Run a command, or only print it with --dry-run.
+run() {
   if [[ "$DRY_RUN" == true ]]; then
-    log "DRY RUN: ${command[*]}"
+    log "DRY RUN: $*"
   else
-    "${command[@]}"
+    "$@"
   fi
 }
 
 SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
-run_cmd mkdir -p "$SCREENSHOT_DIR"
+run mkdir -p "$SCREENSHOT_DIR"
 
-# Finder behavior
-run_cmd defaults write -g AppleShowAllExtensions -bool true
-run_cmd defaults write com.apple.finder ShowPathbar -bool true
-run_cmd defaults write com.apple.finder ShowStatusBar -bool true
-run_cmd defaults write com.apple.finder _FXSortFoldersFirst -bool true
+# Finder: show extensions, path bar and status bar; folders before files
+run defaults write -g AppleShowAllExtensions -bool true
+run defaults write com.apple.finder ShowPathbar -bool true
+run defaults write com.apple.finder ShowStatusBar -bool true
+run defaults write com.apple.finder _FXSortFoldersFirst -bool true
 
-# Dock behavior
-run_cmd defaults write com.apple.dock autohide -bool true
-run_cmd defaults write com.apple.dock show-recents -bool false
+# Dock: auto-hide, no recent apps
+run defaults write com.apple.dock autohide -bool true
+run defaults write com.apple.dock show-recents -bool false
 
-# Screenshot defaults
-run_cmd defaults write com.apple.screencapture location -string "$SCREENSHOT_DIR"
-run_cmd defaults write com.apple.screencapture type -string png
-run_cmd defaults write com.apple.screencapture disable-shadow -bool true
+# Screenshots: PNG in ~/Pictures/Screenshots, no window shadow
+run defaults write com.apple.screencapture location -string "$SCREENSHOT_DIR"
+run defaults write com.apple.screencapture type -string png
+run defaults write com.apple.screencapture disable-shadow -bool true
 
-# Keyboard
-run_cmd defaults write -g KeyRepeat -int 1
-run_cmd defaults write -g ApplePressAndHoldEnabled -bool false
+# Keyboard: fastest key repeat, no accent popup on press-and-hold
+run defaults write -g KeyRepeat -int 1
+run defaults write -g ApplePressAndHoldEnabled -bool false
 
-if [[ "$DRY_RUN" == true ]]; then
-  log "DRY RUN: would restart Finder, Dock, and SystemUIServer"
-else
-  for process_name in Finder Dock SystemUIServer; do
-    if pgrep -x "$process_name" >/dev/null 2>&1; then
-      run_cmd killall "$process_name"
-    else
-      warn "$process_name not running; restart skipped"
-    fi
-  done
-fi
+# Restart the apps that cache these settings so they take effect now.
+for app in Finder Dock SystemUIServer; do
+  if [[ "$DRY_RUN" == true ]]; then
+    log "DRY RUN: would restart $app"
+  elif pgrep -x "$app" >/dev/null 2>&1; then
+    killall "$app"
+  else
+    warn "$app not running; restart skipped"
+  fi
+done
 
 log "macOS defaults applied."
