@@ -1,69 +1,114 @@
 ---
 name: k8s-access
-description: Access AWS EKS Kubernetes clusters with this dotfiles setup (awsme-sso, kubeconfig from kube/config.eks.local.yaml, kl/kx aliases, optional cs helper). Use when running kubectl commands, switching kube contexts or AWS profiles, or debugging cluster workloads.
+description: Run kubectl against AWS EKS clusters on this machine. Use when inspecting or debugging cluster workloads, picking a kube context or AWS profile, signing in to AWS for kubectl, or fixing kubectl auth errors (Unauthorized, expired token, missing context).
 ---
 
 # Kubernetes (EKS) access
 
 Clusters, contexts and AWS profiles are machine-specific and live in untracked files, so
-**discover them; never guess**. Nothing here is hardcoded on purpose.
+**discover them; never guess**.
 
-## Where the configuration lives
+## How it fits together
 
-| What | Source |
-| --- | --- |
-| AWS profiles (SSO or `aws login`) | `$AWS_CONFIG_FILE` → `~/.config/dotfiles/aws/config.local` |
-| Kube contexts | `$KUBECONFIG` → `kube/config.eks.local.yaml` and `~/.kube/config.local` (whichever exist) |
-| Per-profile sign-in aliases, `cs` helper | `~/.config/dotfiles/shell/zshrc.local` (may define neither) |
-| Shared aliases | `kl` = `kubectl`, `kx` = `kubectx` (`shell/aliases.zsh`) |
+| What                              | Where                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| AWS profiles (SSO or `aws login`) | `$AWS_CONFIG_FILE` → `~/.config/dotfiles/aws/config.local`                                                   |
+| Kube contexts                     | `$KUBECONFIG` → `~/.config/dotfiles/kube/config.eks.local.yaml` and `~/.kube/config.local` (whichever exist) |
+| Sign-in helper                    | `~/.local/bin/awsme-sso` → `bin/awsme-sso.sh` (must be sourced)                                              |
+| Profile aliases, `cs` helper      | `~/.config/dotfiles/shell/zshrc.local` (optional, interactive shells only)                                   |
 
-## Discover before acting
+Each context's user runs `aws eks get-token` through an exec plugin, usually with `AWS_PROFILE`
+pinned in the kubeconfig. So kubectl only needs **a valid session for that profile**; it does not
+need `awsme-sso` sourced in the same command.
 
-```bash
-aws configure list-profiles                 # available AWS profiles
-kubectl config get-contexts                 # contexts; the current one is starred
-kubectl config view --minify -o jsonpath='{.users[0].user.exec.env}'   # AWS_PROFILE a context's token uses, if pinned
-zsh -ic 'whence -f cs' 2>/dev/null          # the cs mapping, if this machine defines one
-echo "$AWS_PROFILE"                         # profile active in this shell
-```
+Use `kubectl`, not the `kl`/`kx` aliases: tool shells are not interactive. `kubectl` is not in
+`homebrew/Brewfile`; if `command -v kubectl` finds nothing, tell the user instead of installing it.
 
-## Signing in
-
-`awsme-sso` must be **sourced** so it can export into the shell:
+## 1. Discover
 
 ```bash
-source ~/.local/bin/awsme-sso <profile>     # or the profile alias from zshrc.local
+# context, cluster ARN (holds the region), namespace, pinned AWS_PROFILE; one per line
+kubectl config view -o json | jq -r '
+  (.users | map({(.name): .user}) | add) as $u
+  | .contexts[] | [.name, .context.cluster, (.context.namespace // "-"),
+      ($u[.context.user].exec.env // [] | map(select(.name=="AWS_PROFILE").value) | first // "-")]
+  | @tsv'
+kubectl config current-context
+aws configure list-profiles
 ```
 
-It runs `aws sso login` or `aws login` only when the session is invalid, sets `AWS_PROFILE`,
-`AWS_ENV_NAME` and `AWS_ACCOUNT_ID`, and for SSO profiles exports temporary credentials.
-Each tool call runs in a fresh shell, so sign in and run kubectl in the **same command**:
+Pick the context from the task. Working-directory hints (`production`/`staging`/`development`,
+`us-east-1`/`us-east-2`) only narrow the candidates; confirm against the list and ask when more
+than one fits. Never assume a namespace: take it from the task, the context, or ask.
+
+## 2. Check the session
 
 ```bash
-source ~/.local/bin/awsme-sso <profile> && kubectl --context <context> get pods -n <namespace>
+aws sts get-caller-identity --profile <profile>
 ```
 
-If `zshrc.local` defines `cs <context>`, it switches context, signs in, and `cd`s to the matching
-terraform directory of the current repo in one step; check its mapping with `whence -f cs` first.
+If it fails, sign-in needs a browser, which a tool call can't finish. Ask the user to run it
+with the `!` prefix so it lands in the session:
+
+- SSO profile: `! aws sso login --profile <profile>`
+- `aws login` profile (has `login_session`, check with
+  `aws configure get login_session --profile <profile>`): `! aws login --profile <profile>`
+
+Don't retry sign-in in a loop.
+
+## 3. Run
+
+```bash
+kubectl --context <context> -n <namespace> get pods
+```
+
+Always pass `--context` (and `-n`) explicitly, and say which context and namespace a command
+targets. Never run `kubectx`, `kubens`, `kubectl config use-context` or `cs` unless asked: they
+change the current context in the shared kubeconfig, which moves the user's other terminals too.
+
+### Credentials gotcha
+
+Sourcing `awsme-sso` for an SSO profile **exports static credentials**
+(`AWS_ACCESS_KEY_ID`, …). The exec plugin inherits them and they beat the pinned `AWS_PROFILE`,
+so kubectl authenticates as the wrong account. If the shell has them and the context's profile
+differs, drop them for the call:
+
+```bash
+env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
+  kubectl --context <context> -n <namespace> get pods
+```
+
+Source `awsme-sso` only for a context without a pinned profile, or when the same command also
+runs other AWS CLI calls, and then in that same command:
+`source ~/.local/bin/awsme-sso <profile> && kubectl --context <context> …`.
+
+## Troubleshooting
+
+| Symptom                                                             | Likely cause → fix                                                                                                                                                          |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Error loading SSO Token` / `Token has expired` / `get-token` fails | Session expired → step 2                                                                                                                                                    |
+| `You must be logged in to the server (Unauthorized)`                | Wrong principal: compare `aws sts get-caller-identity` with the context's profile (see gotcha); otherwise the role has no EKS access entry. Tell the user, don't change IAM |
+| `context "<x>" does not exist`                                      | Not in `$KUBECONFIG` → add it (below)                                                                                                                                       |
+| `executable aws not found`                                          | `aws` missing from `PATH` in the tool shell                                                                                                                                 |
+| `forbidden: User "…" cannot …`                                      | Authenticated but RBAC denies it. Report it, don't work around it                                                                                                           |
 
 ## Adding a cluster context
 
+Ask first; this writes a local, untracked file:
+
 ```bash
 aws eks update-kubeconfig --name <cluster> --region <region> --alias <context> \
-  --kubeconfig ~/.config/dotfiles/kube/config.eks.local.yaml
+  --profile <profile> --kubeconfig ~/.config/dotfiles/kube/config.eks.local.yaml
 ```
 
-This writes a local, untracked file. Ask before running it.
+`--profile` pins `AWS_PROFILE` in the new user entry. `aws eks list-clusters --region <region>
+--profile <profile>` finds cluster names.
 
-## Rules
+## Safety
 
-- Pass `--context <name>` explicitly instead of relying on the current context, and say which
-  context and namespace a command targets.
-- Never assume a namespace; derive it from the task or ask.
-- Infer environment and region from the working directory (`production`/`staging`/`development`,
-  `us-east-1`/`us-east-2`) only to pick a candidate, then confirm it against the discovered
-  contexts. Ask when more than one fits.
-- Read-only commands (`get`, `describe`, `logs`, `top`) are fine after confirming the target.
-  Ask before anything that mutates a cluster (`apply`, `delete`, `scale`, `rollout restart`,
-  `exec`, `port-forward`), and treat production as needing explicit confirmation every time.
-- If sign-in needs a browser (SSO device flow), tell the user rather than retrying in a loop.
+- Read-only commands (`get`, `describe`, `logs`, `top`, `events`, `auth can-i`) are fine once
+  the target is confirmed.
+- Ask before anything that mutates a cluster or reaches into it: `apply`, `create`, `delete`,
+  `edit`, `patch`, `scale`, `rollout restart`, `drain`, `cordon`, `exec`, `cp`, `port-forward`.
+  Production needs explicit confirmation every time.
+- Don't print Secret contents (`get secret -o yaml`, `describe secret` is fine); ask first.
