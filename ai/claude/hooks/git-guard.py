@@ -28,7 +28,13 @@ MAX_SUBJECT = 72
 BRANCH_TYPES = "feat|fix|docs|refactor|test|chore|ci|perf|build|style|revert"
 DEFAULT_BRANCH_PATTERN = rf"^({BRANCH_TYPES})/[a-z0-9]+(-[a-z0-9]+)*$"
 MAIN_CHANGING = {"commit", "merge", "rebase", "cherry-pick", "revert", "am"}
-LONG_WITH_VALUE = {"--message", "--file", "--reuse-message", "--reedit-message", "--template"}
+LONG_WITH_VALUE = {
+    "--message",
+    "--file",
+    "--reuse-message",
+    "--reedit-message",
+    "--template",
+}
 ATTRIBUTION = re.compile(
     r"co-authored-by|generated (with|by)\b.*\b(claude|copilot|ai)\b|\bclaude code\b|noreply@anthropic",
     re.IGNORECASE,
@@ -73,7 +79,13 @@ def current_branch(repo: Path) -> str:
     if branch:
         return branch
     for state in ("rebase-merge", "rebase-apply"):
-        path = git(repo, "rev-parse", "--path-format=absolute", "--git-path", f"{state}/head-name")
+        path = git(
+            repo,
+            "rev-parse",
+            "--path-format=absolute",
+            "--git-path",
+            f"{state}/head-name",
+        )
         head = Path(path) if path else None
         if head and head.is_file():
             return head.read_text().strip().removeprefix("refs/heads/")
@@ -85,7 +97,9 @@ def split_git(tokens: list[str], cwd: Path) -> tuple[Path, str, list[str]] | Non
     if not tokens or Path(tokens[0]).name != "git":
         return None
     i, repo = 1, cwd
-    while i < len(tokens) and tokens[i].startswith("-"):  # global options before the subcommand
+    while i < len(tokens) and tokens[i].startswith(
+        "-"
+    ):  # global options before the subcommand
         if tokens[i] == "-C" and i + 1 < len(tokens):
             repo = (cwd / tokens[i + 1]).resolve()
             i += 2
@@ -163,7 +177,9 @@ def message_problems(message: str, branch: str) -> list[str]:
     found = []
     subject = message.strip().splitlines()[0] if message.strip() else ""
     if ATTRIBUTION.search(message):
-        found.append("remove AI attribution (Co-Authored-By, 'Generated with ...'); never credit an AI.")
+        found.append(
+            "remove AI attribution (Co-Authored-By, 'Generated with ...'); never credit an AI."
+        )
     if message != message.lower():
         found.append("the whole commit message must be lowercase.")
     description = subject
@@ -176,7 +192,9 @@ def message_problems(message: str, branch: str) -> list[str]:
     if not description.strip():
         found.append("the subject needs a short description.")
     elif len(description) > MAX_SUBJECT:
-        found.append(f"keep the subject short: {len(description)} chars, limit {MAX_SUBJECT}.")
+        found.append(
+            f"keep the subject short: {len(description)} chars, limit {MAX_SUBJECT}."
+        )
     return found
 
 
@@ -193,7 +211,10 @@ def branch_problems(name: str, repo: Path) -> list[str]:
 
 def new_branch_name(sub: str, args: list[str]) -> str | None:
     """Return the branch a switch/checkout/branch command would create or rename to."""
-    create = {"switch": {"-c", "-C", "--create", "--force-create"}, "checkout": {"-b", "-B"}}
+    create = {
+        "switch": {"-c", "-C", "--create", "--force-create"},
+        "checkout": {"-b", "-B"},
+    }
     if sub in create:
         for j, arg in enumerate(args[:-1]):
             if arg in create[sub]:
@@ -203,9 +224,28 @@ def new_branch_name(sub: str, args: list[str]) -> str | None:
         positional = [a for a in args if not a.startswith("-")]
         if any(a in ("-m", "-M", "--move") for a in args) and positional:
             return positional[-1]
-        listing = {"-d", "-D", "--delete", "-l", "--list", "-a", "-r", "-v", "-vv", "--show-current",
-                   "--contains", "--merged", "--no-merged", "-u", "--set-upstream-to",
-                   "--unset-upstream", "--edit-description", "-c", "-C", "--copy"}
+        listing = {
+            "-d",
+            "-D",
+            "--delete",
+            "-l",
+            "--list",
+            "-a",
+            "-r",
+            "-v",
+            "-vv",
+            "--show-current",
+            "--contains",
+            "--merged",
+            "--no-merged",
+            "-u",
+            "--set-upstream-to",
+            "--unset-upstream",
+            "--edit-description",
+            "-c",
+            "-C",
+            "--copy",
+        }
         if positional and not listing.intersection(args):
             return positional[0]
     return None
@@ -215,9 +255,13 @@ def push_problems(args: list[str], branch: str) -> list[str]:
     """Block plain force-pushes and any push that would update a protected branch."""
     found = []
     if "--force" in args or "-f" in args:
-        found.append("plain force-push is not allowed; use --force-with-lease on your own branch.")
+        found.append(
+            "plain force-push is not allowed; use --force-with-lease on your own branch."
+        )
     if "--all" in args or "--mirror" in args:
-        found.append("don't push all branches (--all/--mirror); push only your feature branch.")
+        found.append(
+            "don't push all branches (--all/--mirror); push only your feature branch."
+        )
     positional = [a for a in args if not a.startswith("-")]
     refspecs = positional[1:]
     if not refspecs and branch in PROTECTED:
@@ -229,7 +273,9 @@ def push_problems(args: list[str], branch: str) -> list[str]:
         if dest == "HEAD":
             dest = branch
         if dest in PROTECTED:
-            found.append(f"never push to '{dest}' directly; open a pull request from a branch.")
+            found.append(
+                f"never push to '{dest}' directly; open a pull request from a branch."
+            )
     return found
 
 
@@ -274,7 +320,9 @@ def check(sub: str, args: list[str], raw: str, repo: Path) -> list[str]:
     branch = current_branch(repo)
     found = []
     if sub in MAIN_CHANGING and branch in PROTECTED:
-        if not (sub == "merge" and "--ff-only" in args):  # fast-forwarding to the remote is fine
+        if not (
+            sub == "merge" and "--ff-only" in args
+        ):  # fast-forwarding to the remote is fine
             found.append(f"never {sub} on '{branch}' directly. {NO_BRANCH_FIX}")
     if sub == "commit" and branch not in PROTECTED:
         message = commit_message(args, raw, repo)
@@ -310,7 +358,10 @@ def main() -> int:
             repo, sub, args = invocation
             found += check(sub, args, raw, repo)
     if found:
-        print("git command rejected (see ~/.claude/CLAUDE.md, Git sections):", file=sys.stderr)
+        print(
+            "git command rejected (see ~/.claude/CLAUDE.md, Git sections):",
+            file=sys.stderr,
+        )
         for item in dict.fromkeys(found):
             print(f"  - {item}", file=sys.stderr)
         return 2
