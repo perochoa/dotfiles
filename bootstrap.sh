@@ -74,20 +74,20 @@ link() {
   run ln -sfn "$src" "$dst"
 }
 
-copy_template git/gitconfig.local.template git/gitconfig.local
+copy_template ai/corrections.template.md ai/corrections.local.md
 copy_template aws/config.template aws/config.local
+copy_template git/gitconfig.local.template git/gitconfig.local
 copy_template kube/config.eks.template.yaml kube/config.eks.local.yaml
 copy_template shell/zshrc.local.template shell/zshrc.local
-copy_template ai/corrections.template.md ai/corrections.local.md
 
-link shell/zshrc .zshrc
-link git/gitconfig.local .gitconfig
-link git/config .config/git/config
-link tmux/tmux.conf .tmux.conf
-link starship/starship.toml .config/starship.toml
-link nvim .config/nvim
-link ghostty/config .config/ghostty/config
 link aws/config.local .aws/config
+link ghostty/config .config/ghostty/config
+link git/config .config/git/config
+link git/gitconfig.local .gitconfig
+link nvim .config/nvim
+link shell/zshrc .zshrc
+link starship/starship.toml .config/starship.toml
+link tmux/tmux.conf .tmux.conf
 
 # AI coding assistants share one set of instructions (ai/AGENTS.md) and skills (ai/skills).
 # Remove dangling links into this repo left behind by skills or agents since deleted.
@@ -97,11 +97,13 @@ for stale in "$HOME"/.claude/skills/* "$HOME"/.claude/agents/*; do
     run rm "$stale"
   fi
 done
+
 link ai/AGENTS.md .claude/CLAUDE.md
 link ai/AGENTS.md .copilot/copilot-instructions.md
-link ai/claude/settings.json .claude/settings.json
 link ai/claude/hooks .claude/hooks
+link ai/claude/settings.json .claude/settings.json
 link ai/skills .agents/skills
+
 # ~/.claude/skills also holds skills installed by Claude Code itself, so link each skill individually.
 for skill in "$ROOT_DIR"/ai/skills/*/; do
   name="$(basename "$skill")"
