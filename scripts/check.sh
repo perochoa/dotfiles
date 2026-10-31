@@ -15,7 +15,7 @@ fail() {
 cd "$ROOT_DIR"
 
 bash_scripts() {
-  printf '%s\n' bootstrap.sh scripts/*.sh bin/*.sh ai/skills/*/scripts/*.sh
+  printf '%s\n' bootstrap.sh scripts/*.sh bin/*.sh
 }
 
 if command -v shellcheck >/dev/null 2>&1; then
@@ -35,7 +35,7 @@ log "zsh syntax"
 zsh -n shell/zshrc shell/*.zsh shell/zshrc.local.template
 
 python_files() {
-  printf '%s\n' ai/claude/hooks/*.py ai/skills/*/scripts/*.py
+  printf '%s\n' ai/claude/hooks/*.py
 }
 
 if command -v python3 >/dev/null 2>&1; then
@@ -93,7 +93,6 @@ for link in \
   .claude/agents/architecture-auditor.md \
   .claude/hooks \
   .claude/settings.json \
-  .claude/skills/gitlab-cli \
   .config/ghostty/config \
   .config/git/config \
   .config/nvim \
