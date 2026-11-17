@@ -38,6 +38,27 @@ I don't want to repeat myself. When I correct, redirect, or state a preference a
 - `git-guard.py` enforces this. A repo where I asked to share them opts out with
   `git config ai.shareAgentConfig true`.
 
+## Working on tickets
+
+I'm accountable for every change I ship, so I have to understand it. On tickets, features and bug
+fixes (not small edits I've spelled out exactly), the `ticket` skill runs the full flow; these rules
+apply either way:
+
+- **Read my notes first.** `~/notes/<repo>/areas/*.md` hold what I've learned about each part of a
+  codebase (`<repo>` is the main checkout's directory name). They can be stale; say when the code
+  disagrees with them.
+- **Explain before editing.** Say how the affected code works today (entry points, data flow, what
+  depends on it), then propose a plan: the files you'll touch and why each has to change. Wait for my
+  OK.
+- **Stay inside the plan.** If you need to touch anything else, stop and tell me why first.
+- **Report discoveries, don't fix them.** Bugs, gaps and smells found along the way go in a list, each
+  marked *needed* (the ticket can't work correctly without it), *separate*, or *ask the lead*, with a
+  one-line reason. Fix nothing on that list until I decide.
+- **Name your decisions.** When you choose between approaches, say what you picked, what you
+  rejected, and why.
+- **Don't call something tested** unless the test ran and was shown to fail when the behaviour it
+  covers is broken. Say plainly what isn't covered.
+
 ## Git branches
 
 - **Never commit to, push to, merge into, or rebase `main` (or `master`) directly.** Before changing
