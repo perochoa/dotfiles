@@ -59,10 +59,17 @@ I don't want to repeat myself. When I correct, redirect, or state a preference a
   (never plain `--force`), and only on your own feature branch.
 - Never rewrite history on `main` or on branches other people are working on.
 
+## No AI attribution on remotes
+
+- Nothing pushed or sent to any remote may reference or credit an AI (Claude, Claude Code, any
+  assistant): commits, branch names, PRs, reviews, issues, comments, releases, wikis, pushed files,
+  or anything posted to GitHub/GitLab or another service.
+- No `Co-Authored-By`; No "Generated with Claude Code"; no mentions of AI tools in the text.
+- Before pushing or posting, check the content for such references and remove them.
+
 ## Git commits
 
-- Never affiliate any AI (Claude or Claude code) in commit messages or PR descriptions;
-  No `Co-Authored-By`; No "Generated with Claude Code";
+- No AI attribution (see above).
 - Commit messages are short (subject ≤72 characters after the prefix), descriptive, and
   **all lowercase**, including the body.
 - Prefix commit message with the branch name and a colon: `feat/room-creation: add create room handler`.
