@@ -38,6 +38,16 @@ I don't want to repeat myself. When I correct, redirect, or state a preference a
 - `git-guard.py` enforces this. A repo where I asked to share them opts out with
   `git config ai.shareAgentConfig true`.
 
+## Writing in my voice
+
+- Anything other people will read under my name is written in my voice: issues, PRs, comments,
+  reviews, reports, docs, READMEs, chat messages, emails, blog posts.
+- Use the `voice` skill for it (`ai/skills/voice`, local to this machine). Pick the register
+  from the destination and follow the skill's workflow before drafting.
+- If the skill isn't available, write plainly and directly, as a student would, and match what
+  I've already written in that place.
+- Project rules can be stricter (e.g. "don't write the handouts"); those win.
+
 ## Git branches
 
 - **Never commit to, push to, merge into, or rebase `main` (or `master`) directly.** Before changing
