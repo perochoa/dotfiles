@@ -14,6 +14,12 @@
             "command": "\"$HOME\"/.claude/hooks/git-guard.py",
             "timeout": 10,
             "statusMessage": "checking git rules"
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/voice-guard.py",
+            "timeout": 10,
+            "statusMessage": "checking voice skill"
           }
         ]
       }
