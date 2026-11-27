@@ -42,6 +42,9 @@ I don't want to repeat myself. When I correct, redirect, or state a preference a
 
 - Anything other people will read under my name is written in my voice: issues, PRs, comments,
   reviews, reports, docs, READMEs, chat messages, emails, blog posts.
+- That includes what I commit for a team: code and config comments, LaTeX comments, docstrings
+  and READMEs in shared repos. Keep those comments short and plain, and don't point at files
+  that only exist on my machine.
 - Use the `voice` skill for it (`ai/skills/voice`, local to this machine). Pick the register
   from the destination and follow the skill's workflow before drafting.
 - If the skill isn't available, write plainly and directly, as a student would, and match what
